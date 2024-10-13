@@ -1,0 +1,19 @@
+// This is a comment
+
+fn None main(int num) {
+  console.print(num)
+}
+// This a function named 'main' its return type is 'None' it takes one parameter of int type named 'num' and then prints that parameter
+
+str user_input = console.readline("What is your favorite color?\n> ")
+// This asks the user what their favorite color is then saves it to a variable of str type, this variable is also mutable
+
+int& tax_rate = .5
+// This is an immutable variable, i know super epic
+
+if (tax_rate > .3) {
+  console.print("These tax rates are getting out of hand!")
+}
+// This is obviously an if statment, no else or elif yet, coming soon for sure
+
+// All the types so far are: int, str, bool, float, and array. Might add more in the future, might not.
