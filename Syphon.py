@@ -1,3 +1,5 @@
+import sys
+
 def invalid_name(item, item_class):
     for i in item:
         if not i in "ABCDEFGHIJKLMNOPQRSTUVWXZYabcdefghijklmnopqrstuvwxyz_":
@@ -181,6 +183,7 @@ def syphon_interpreter(filename, tokens):
     file.close()
 
 def syphon_tokenizer(filepath):
+    filepath = filepath[2:-2]   # Removes Brackets + Single Quotes
     if not filepath[-4:] == '.syp':
         raise NameError("File Extension is incorrect, Syphon uses '.syp'")
     file = open(filepath, "r")
@@ -372,8 +375,7 @@ def syphon_tokenizer(filepath):
                 
     file.close()
     #print(variables)
-    print(tokens)
+    #print(tokens)
     syphon_interpreter(filepath[:-4], tokens)
-    
-syphon_tokenizer('.syp')
-# Make this parameter the Syphon file you wanna interpret (has to end with .syp)
+
+syphon_tokenizer(str(sys.argv[1:]))
