@@ -5,7 +5,17 @@
 ## Features (So Far)
 
 - Function definitions
-- Conditional statements (if)
+- Conditional statements (`if`)
 - For loops
 - Variable declarations (mutable and immutable)
-- Basic arithmetic operations (+, -, ++, --)
+- Basic arithmetic operations (+, -, ++;, --;)
+
+## Confirmed Coming Soon
+
+- `elif` and `else`
+- `foreach` and `while` loops
+- Full rewrite (code too ugly)
+
+## Confirmed Never Coming Soon
+
+- Classes; object orientation sucks.
