@@ -114,8 +114,7 @@ def syphon_interpreter(filename, tokens):
                 raise ValueError("Variables cant be set to 'print' yet lol")
             if tokens[var + 2] == "IMMUTABLE":
                 tokens[var + 3] = tokens[var + 3].upper()
-            elif tokens [var + 2] == "MUTABLE":
-                tokens[var + 3] = tokens[var + 3]
+            tokens[var + 3] = f"{tokens[var + 3]}: {tokens[var + 1].lower()}"
             if tokens[var + 4] == "DECLARED":
                 if tokens[var + 1] == "INT":
                     file.write(f"{tokens[var + 3]} = 0\n")
@@ -142,20 +141,20 @@ def syphon_interpreter(filename, tokens):
         if token == "END":
             indents -= 1
             tokens = tokens[tokens.index("END") + 1:]
-        if 'return' in token and indents > 0:
-            file.write('\t'*indents+token+'\n\n')
+        if token == 'RETURN:' and indents > 0:
+            pos = tokens.index(token)
+            if tokens[pos + 1] == 'INPUT:':
+                file.write('\t'*indents+f'return (input({tokens[pos + 2]}))\n')
+            else:
+                file.write('\t'*indents+tokens[pos + 1]+'\n')
+        if token == 'INPUT:' and tokens[tokens.index(token) - 1] != 'RETURN:':
+            pos = tokens.index(token)
+            file.write('\t'*indents+f'input({tokens[pos + 1]})\n')
+        if token == 'PRINT:':
+            pos = tokens.index(token)
+            file.write('\t'*indents+f'print({tokens[pos + 1]})\n')
         if token == '\n':
             file.write(token)
-        if 'console.print' in token:
-            current_line = tokens[tokens.index(token)]
-            if current_line[current_line.index(")")] == current_line[-1]:
-                file.write('\t'*indents+f'print{current_line[current_line.index("(") : current_line.index(")")+1]}\n')
-
-            elif current_line[current_line.index(")") + 1] == ")":
-                file.write('\t'*indents+f'print{current_line[current_line.index("(") : current_line.index(")")+1]})\n')
-        if 'console.readline' in token and tokens[tokens.index(token) -2][-1] != "E":
-            current_line = tokens[tokens.index(token)]
-            file.write('\t'*indents+f'input{current_line[current_line.index("(") : current_line.index(")")+1]}\n')
         if token == 'FUNCTION CALL:':
             func_name = tokens[tokens.index(token)+1]
             call_value = tokens[tokens.index(token)+2]
@@ -183,7 +182,6 @@ def syphon_interpreter(filename, tokens):
     file.close()
 
 def syphon_tokenizer(filepath):
-    filepath = filepath[2:-2]   # Removes Brackets + Single Quotes
     if not filepath[-4:] == '.syp':
         raise NameError("File Extension is incorrect, Syphon uses '.syp'")
     file = open(filepath, "r")
@@ -239,8 +237,11 @@ def syphon_tokenizer(filepath):
                 if 'console.readline' in var_value:
                     pass
                 
-                elif var_value in variables:
-                    if variables[variables.index(var_value) + 1] != var_type.upper():
+                elif var_value in variables or '&'+var_value in variables:
+                    if '&'+var_value in variables:
+                        new_var_value = '&'+var_value
+                        var_value = var_value.upper()
+                    if variables[variables.index(new_var_value) + 1] != var_type.upper():
                         raise ValueError("Variable set to variable of different type")
                     
                 elif name[1] in variables:
@@ -250,13 +251,14 @@ def syphon_tokenizer(filepath):
                     for char in var_value:
                         if not char in "1234567890":
                             raise ValueError("Type 'int' variable set to incorrect type")
+                                
                 elif var_type == "float":
                     for char in var_value:
                         if not char in "1234567890.":
                             raise ValueError("Type 'float' variable is set to an incorrect type")
                             
                         try:
-                            if not var_value.index('.') > 0 and not var_value.index('.') < len(var_value):
+                            if not var_value.index('.') < len(var_value):
                                 raise ValueError("Type 'float' variable is set to an incorrect type")
                         except:
                             raise ValueError("Type 'float' variable is set to an invalid type")
@@ -303,10 +305,27 @@ def syphon_tokenizer(filepath):
         
         elif line == '++':
             pass
-            
-        elif 'console.readline' in line or 'console.print' in line or 'return' in line:
+        
+        elif 'return' in line:
             line = line.strip()
-            tokens.append(line)
+            output = line[line.index('(') + 1:-1]
+            tokens.append('RETURN:')
+            if 'console.readline' in output:
+                tokens.append('INPUT:')
+                output = output[output.index('(') + 1:-1]
+            tokens.append(output)
+            
+        elif 'console.readline' in line:
+            line = line.strip()
+            tokens.append('INPUT:')
+            func_input = line[line.index('readline') + 9:-1]
+            tokens.append(func_input)
+        
+        elif 'console.print' in line:
+            line = line.strip()
+            tokens.append('PRINT:')
+            func_input = line[line.index('print') + 6:-1]
+            tokens.append(func_input)
             
         elif '//' in line:
             tokens.append('COMMENT:')
