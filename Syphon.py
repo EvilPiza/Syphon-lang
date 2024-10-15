@@ -146,7 +146,7 @@ def syphon_interpreter(filename, tokens):
             if tokens[pos + 1] == 'INPUT:':
                 file.write('\t'*indents+f'return (input({tokens[pos + 2]}))\n')
             else:
-                file.write('\t'*indents+tokens[pos + 1]+'\n')
+                file.write('\t'*indents+'return '+tokens[pos + 1]+'\n')
         if token == 'INPUT:' and tokens[tokens.index(token) - 1] != 'RETURN:':
             pos = tokens.index(token)
             file.write('\t'*indents+f'input({tokens[pos + 1]})\n')
