@@ -1,3 +1,5 @@
+import sys
+
 def invalid_name(item, item_class):
     for i in item:
         if not i in "ABCDEFGHIJKLMNOPQRSTUVWXZYabcdefghijklmnopqrstuvwxyz_":
@@ -176,6 +178,10 @@ def syphon_interpreter(filename, tokens):
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
+            if token == 'MULTI-LINE COMMENT:' or token == 'MULTI-LINE END':
+                file.write('"""\n')
+            # "Oh why have 2 types of token that do the same thing??" -You probably
+            # DEBUGGING PURPOSEESEFEJFOIWJEF OWIEJFOIWJE OIJWFJ
             if token == "VAR REASSIGNMENT:":
                 current_line = tokens.index(token)
                 file.write('\t'*indents+tokens[current_line + 1]+" = "+tokens[current_line + 2]+'\n')
@@ -380,6 +386,12 @@ def syphon_tokenizer(filepath):
             elif '//' in line:
                 tokens.append('COMMENT:')
                 tokens.append(line[2:])
+            
+            elif '/*' in line:
+                tokens.append('MULTI-LINE COMMENT:')
+            
+            elif '*/' in line:
+                tokens.append('MULTI-LINE END')
                     
             # When adding more stuff add it above this;
             # These are the blackhole statements vvv
@@ -448,3 +460,6 @@ def syphon_tokenizer(filepath):
         #print(variables)
         print(tokens)
         syphon_interpreter(filepath[:-4], tokens)
+
+syphon_tokenizer(str(sys.argv[1:]))
+# Accidentally removed .bat support last commit lmao
