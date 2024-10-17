@@ -5,16 +5,14 @@
 ## Features (So Far)
 
 - Function definitions
-- Conditional statements (`if`, `elif`, `else`)
-- For loops
+- Conditional statements (`if`, `elif`, and `else`)
+- Loops (`for`, `foreach`, and `while`)
 - Variable declarations (mutable and immutable)
 - Basic arithmetic operations (+, -, ++;, --;)
 
 ## Confirmed Coming Soon
 
-- `foreach` and `while` loops
 - Full rewrite (code too ugly)
-- Multi-line comments
 
 ## Confirmed Never Coming Soon
 
