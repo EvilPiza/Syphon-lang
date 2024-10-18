@@ -18,6 +18,7 @@ def is_this_variable_defined(list1, text):
 def variable_operation(list1, text):
     text = text.split()
     for i in list1:
+        i = i.strip()
         if len(text) > 2:
             if text[1] == '+=':
                 return ["Addition", i, text[2]]
@@ -96,19 +97,24 @@ def syphon_interpreter(filename, tokens):
                     default_value = False
                 elif type_ == 'array':
                     default_value = "[]"
-                file.write('\t'*(indents-1)+f'{var} = {default_value}\n')
-                file.write('\t'*(indents-1)+f'while {conditional[1]}:\n')
                 if conditional[2][1:] == '++':
                     conditional[2] = conditional[2][:1]+' += 1'
+                    I_coded_this_weird = "+ 1"
                 elif conditional[2][1:] == '--':
                     conditional[2] = conditional[2][:1]+' -= 1'
+                    I_coded_this_weird = "- 1"
+                if conditional[1][4:8] == 'len(':
+                    if conditional[1][8] == '&':
+                        conditional[1] = conditional[1][:8]+conditional[1][9:-1].upper()+')'
+                file.write('\t'*(indents-1)+f'{var} = {default_value}\n')
+                file.write('\t'*(indents-1)+f'while {conditional[1]} {I_coded_this_weird}:\n')
+
                 file.write('\t'*indents+f'{conditional[2]}\n')
             if token == "FOREACH LOOP:":
                 indents += 1
                 if tokens[index+3][0] == '&':
                     tokens[index+3] = tokens[index+3][1:].upper()
-                file.write('\t'*(indents-1)+f'{tokens[index+2]}: {tokens[index+1]}\n')
-                file.write('\t'*(indents-1)+f'for {tokens[index+2]} in {tokens[index+3]}:\n')
+                file.write('\t'*(indents-1)+f"for {tokens[index+2]} in {tokens[index+3]}:\t# Iterating over type '{tokens[index+1]}'\n")
             if token == "WHILE LOOP:":
                 indents += 1
                 file.write('\t'*(indents-1)+f'while {tokens[index+1][1:-1]}:\n')
@@ -128,7 +134,7 @@ def syphon_interpreter(filename, tokens):
                 if tokens[var + 2] == "IMMUTABLE":
                     tokens[var + 3] = tokens[var + 3].upper()
                 if tokens[var + 1] == "ARRAY":
-                    tokens[var + 1] = "LIST"
+                    tokens[var + 1] = "ANY"
                 tokens[var + 3] = f"{tokens[var + 3]}: {tokens[var + 1].lower()}"
                 if tokens[var + 4] == "DECLARED":
                     if tokens[var + 1] == "INT":
@@ -154,19 +160,21 @@ def syphon_interpreter(filename, tokens):
                         file.write(f"{tokens[var + 3]} = input({tokens[var + 3]}).split(' ')")
                 else:
                     file.write(f"{tokens[var + 3]} = {tokens[var + 4]}\n")
-                tokens.pop(var)
             if token == "END":
                 indents -= 1
-                tokens = tokens[tokens.index("END") + 1:]
+                #tokens = tokens[tokens.index("END") + 1:]
             if token == 'RETURN:' and indents > 0:
                 if tokens[index + 1] == 'INPUT:':
                     file.write('\t'*indents+f'return (input({tokens[index + 2]}))\n')
                 else:
                     file.write('\t'*indents+'return '+tokens[index + 1]+'\n')
-            if token == 'INPUT:' and tokens[tokens.index(token) - 1] != 'RETURN:':
+            if token == 'INPUT:' and tokens[index - 1] != 'RETURN:':
                 file.write('\t'*indents+f'input({tokens[index + 1]})\n')
             if token == 'PRINT:':
-                file.write('\t'*indents+f'print({tokens[tokens.index(token) + 1]})\n')
+                file.write('\t'*indents+f'print({tokens[index + 1]})\n')
+                #tokens.pop(tokens.index(token))
+                # Idk why tf this fixes everything but it does :shrug:
+                # plz future me fix this its so weird
             if token == '\n':
                 file.write(token)
             if token == 'FUNCTION CALL:':
@@ -371,6 +379,10 @@ def syphon_tokenizer(filepath):
                 tokens.append(output)
                     
             elif 'console.readline' in line:
+                for i in line.split(' '):
+                    if i in variables:
+                        pass 
+                    # DO SHOULD NOT RUN vvv
                 line = line.strip()
                 tokens.append('INPUT:')
                 func_input = line[line.index('readline') + 9:-1]
@@ -380,7 +392,10 @@ def syphon_tokenizer(filepath):
                 line = line.strip()
                 tokens.append('PRINT:')
                 func_input = line[line.index('print') + 6:-1]
-                
+                func_input = func_input.split(' ')
+                if func_input[0][0] == '&':
+                    func_input[0] = func_input[0][1:].upper()
+                func_input = ' '.join(func_input)
                 tokens.append(func_input)
                     
             elif '//' in line:
@@ -397,7 +412,7 @@ def syphon_tokenizer(filepath):
             # These are the blackhole statements vvv
             elif variable_operation(variables, line)[0] == "Unknown Error":
                 raise NameError(f"Variable '{line.split()[0]}' is undefined")
-                    
+            
             elif variable_operation(variables, line)[0] == "Variable Reassignment":
                 var_value = "".join(line).split()[-1]
                 tokens.append("VAR REASSIGNMENT:")
@@ -458,8 +473,7 @@ def syphon_tokenizer(filepath):
                         
         file.close()
         #print(variables)
-        print(tokens)
+        #print(tokens)
         syphon_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:]))
-# Accidentally removed .bat support last commit lmao
