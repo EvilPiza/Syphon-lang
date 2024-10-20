@@ -17,3 +17,9 @@ if (tax_rate > .3) {
 // This is obviously an if statment, no else or elif yet, coming soon for sure
 
 // All the types so far are: int, str, bool, float, and array. Might add more in the future, might not.
+
+int& cool_list_of_numbers = [0, 4, 6, 3, 7]
+// Using any type besides 'array' means your declaring a non-mixed array, meaning it only holds one type of data.
+
+array mixed_list = ['hello!', True, 0, 4.3]
+// You can probably tell this is a 'mixed' array, it can hold any data type, how epic.
