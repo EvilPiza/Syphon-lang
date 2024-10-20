@@ -216,7 +216,7 @@ def syphon_interpreter(filename, tokens):
 
 def syphon_tokenizer(filepath):
     if not filepath[-4:] == '.syp':
-        raise NameError("File Extension is incorrect, Syphon uses '.syp'")
+        raise NameError(f"File Extension is incorrect, Syphon uses '.syp'")
     with open(filepath, "r") as file:
         variables = []
         supported_variable_types = ['int ', 'str ', 'float ', 'bool ', 'array ']
@@ -541,5 +541,5 @@ def syphon_tokenizer(filepath):
         #print(variables)
         print(tokens)
         syphon_interpreter(filepath[:-4], tokens)
-    
-syphon_tokenizer(str(sys.argv[1:]))
+
+syphon_tokenizer(str(sys.argv[1:])[2:-2])
