@@ -12,6 +12,7 @@
 
 ## Confirmed Coming Soon
 
+- Make the `call` keyword do something
 - Full rewrite (code too ugly)
 
 ## Confirmed Never Coming Soon
