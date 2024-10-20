@@ -8,7 +8,7 @@
 - Conditional statements (`if`, `elif`, and `else`)
 - Loops (`for`, `foreach`, and `while`)
 - Variable declarations (mutable and immutable)
-- Basic arithmetic operations (+, -, ++;, --;)
+- Basic arithmetic operations (+, -, *, /, ++;, --;)
 
 ## Confirmed Coming Soon
 
