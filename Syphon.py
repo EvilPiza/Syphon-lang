@@ -313,6 +313,16 @@ def syphon_tokenizer(filepath):
                 tokens.append("FUNCTION CALL:")
                 tokens.append(func_name)
                 tokens.append(func_params)
+                func_name_is_defined = False
+                for indx, tkns in enumerate(tokens):
+                    if tkns == 'FUNCTION:' and tokens[indx + 1] == func_name:
+                        func_type = tokens[indx + 3]
+                        func_name_is_defined = True
+                if func_name_is_defined:
+                    variables.append('FN_'+func_name)
+                else:
+                    raise NameError(f'Function \'{func_name}\' is undefined!')
+                variables.append(func_type)
                     
             # Variables
             elif type(for_loop_result).__name__ == "list":
@@ -539,7 +549,6 @@ def syphon_tokenizer(filepath):
         file.close()
         #print(variables)
         #print(tokens)
-        # For debugging the tokenizer ^^
         syphon_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
