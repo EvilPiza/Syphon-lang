@@ -183,7 +183,7 @@ def syphon_interpreter(filename, tokens):
                 call_value = tokens[tokens.index(token)+2]
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
-                file.write('\t'*indents+func_name+call_value+'\n\n')
+                file.write('\t'*indents+'FN_'+func_name+' = '+func_name+call_value+'\n')
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
@@ -192,8 +192,7 @@ def syphon_interpreter(filename, tokens):
             # "Oh why have 2 types of token that do the same thing??" -You probably
             # DEBUGGING PURPOSEESEFEJFOIWJEF OWIEJFOIWJE OIJWFJ
             if token == "VAR REASSIGNMENT:":
-                current_line = tokens.index(token)
-                file.write('\t'*indents+tokens[current_line + 1]+" = "+tokens[current_line + 2]+'\n')
+                file.write('\t'*indents+tokens[index + 1]+" = "+tokens[index + 2]+'\n')
             if token == "INCREMENT OPERATOR:":
                 current_line = tokens.index(token)
                 file.write('\t'*indents+tokens[current_line + 1]+" += 1\n")
@@ -216,7 +215,7 @@ def syphon_interpreter(filename, tokens):
 
 def syphon_tokenizer(filepath):
     if not filepath[-4:] == '.syp':
-        raise NameError(f"File Extension is incorrect, Syphon uses '.syp'")
+        raise NameError("File Extension is incorrect, Syphon uses '.syp'")
     with open(filepath, "r") as file:
         variables = []
         supported_variable_types = ['int ', 'str ', 'float ', 'bool ', 'array ']
@@ -323,10 +322,8 @@ def syphon_tokenizer(filepath):
                     name = var_name.split(" ")
                     var_type = for_loop_result[0].strip()
                     var_value = var_value.strip()
-                    if 'console.readline' in var_value:
-                        pass
                         
-                    elif var_value in variables or '&'+var_value in variables:
+                    if var_value in variables or '&'+var_value in variables:
                         if '&'+var_value in variables:
                             new_var_value = '&'+var_value
                             var_value = var_value.upper()
@@ -414,7 +411,7 @@ def syphon_tokenizer(filepath):
                     # DO SHOULD NOT RUN vvv
                 line = line.strip()
                 tokens.append('INPUT:')
-                func_input = line[line.index('readline') + 9:-1]
+                func_input = line[index + 9:-1]
                 tokens.append(func_input)
                 
             elif 'console.print' in line:
@@ -443,8 +440,10 @@ def syphon_tokenizer(filepath):
                 raise NameError(f"Variable '{line.split()[0]}' is undefined")
             
             elif variable_operation(variables, line)[0] == "Variable Reassignment":
-                if not 'console.readline' in line:
-                    var_value = "".join(line).split()[-1]
+                if line.split()[2][:16] == 'console.readline':
+                    var_value = 'input'+line[line.index('readline(')+8:-1]
+                else:
+                    var_value = line.split('=')[-1].strip()
                 tokens.append("VAR REASSIGNMENT:")
                 if variable_operation(variables, line)[-1][0] == '&':
                     raise SyntaxError("Immutable value cannot be reassigned")
@@ -539,7 +538,8 @@ def syphon_tokenizer(filepath):
                         
         file.close()
         #print(variables)
-        print(tokens)
+        #print(tokens)
+        # For debugging the tokenizer ^^
         syphon_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
