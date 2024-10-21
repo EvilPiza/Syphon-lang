@@ -179,8 +179,8 @@ def syphon_interpreter(filename, tokens):
             if token == '\n':
                 file.write(token)
             if token == 'FUNCTION CALL:':
-                func_name = tokens[tokens.index(token)+1]
-                call_value = tokens[tokens.index(token)+2]
+                func_name = tokens[index+1]
+                call_value = tokens[index+2]
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
                 file.write('\t'*indents+'FN_'+func_name+' = '+func_name+call_value+'\n')
