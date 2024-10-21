@@ -31,6 +31,5 @@ array mixed_list = ['hello!', True, 0, 4.3]
 // You can probably tell this is a 'mixed' array, it can hold any data type, how epic.
 
 call main(100)
-// This obviously calls the function we declared earlier, when interpreted into python it saves what the function returned to a variable named "FN_{function name}"
-// In syphon it just saved the value main returns to a variable named main, to update main just use the call keyword again!!
+// This obviously calls the function we declared earlier, when interpreted into python, and in vanilla Syphon, it saves what the function returned to a variable named "FN_{function name}"
 // This feature (I don't think I stole,) is Syphon's one unique thing so far!! :) 
