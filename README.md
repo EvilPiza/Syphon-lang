@@ -22,5 +22,5 @@
 ## How to work .bat file
 
 - Just run the .bat file with the parameter of your Syphon file!
-- Example: .\syphon.bat PythonButSlower.syp
-- (I include '.\' because my machine is weird, you probably wont have to)
+- Example: `.\syphon.bat PythonButSlower.syp`
+- (I include " .\ " because my machine is weird, you probably wont have to)
