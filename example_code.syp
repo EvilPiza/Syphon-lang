@@ -5,6 +5,12 @@ fn None main(int num) {
 }
 // This a function named 'main' its return type is 'None' it takes one parameter of int type named 'num' and then prints that parameter
 
+fn str is_this_a_string(str input_) {
+   return ("Yes! This is a string!") 
+}
+// This function would (probably) yell at you if you inputed anything but a string so uh yeah.
+// You HAVE to include parentheses when returning a value, i'm scared of semicolons, and this is the best alternative
+
 str user_input = console.readline("What is your favorite color?\n> ")
 // This asks the user what their favorite color is then saves it to a variable of str type, this variable is also mutable
 
