@@ -8,11 +8,11 @@
 - Conditional statements (`if`, `elif`, and `else`)
 - Loops (`for`, `foreach`, and `while`)
 - Variable declarations (mutable and immutable)
+- Weird function stuff (`call` keyword, read example_code.syp for clairification)
 - Basic arithmetic operations (+, -, *, /, ++;, --;)
 
 ## Confirmed Coming Soon
 
-- Make the `call` keyword do something
 - Full rewrite (code too ugly)
 
 ## Confirmed Never Coming Soon
