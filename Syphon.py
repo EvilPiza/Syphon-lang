@@ -183,7 +183,7 @@ def syphon_interpreter(filename, tokens):
                 call_value = tokens[index+2]
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
-                file.write('\t'*indents+'FN_'+func_name+' = '+func_name+call_value+'\n')
+                file.write('\t'*indents+'__'+func_name+'__'+' = '+func_name+call_value+'\n')
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
@@ -319,7 +319,7 @@ def syphon_tokenizer(filepath):
                         func_type = tokens[indx + 3]
                         func_name_is_defined = True
                 if func_name_is_defined:
-                    variables.append('FN_'+func_name)
+                    variables.append('__'+func_name+'__')
                 else:
                     raise NameError(f'Function \'{func_name}\' is undefined!')
                 variables.append(func_type)
