@@ -17,5 +17,7 @@ if not exist "%input_file%" (
 REM Translates Syphon
 python Syphon.py "%input_file%"
 
-REM Run the generated Python file
-python "%~dpn1.py"
+if NOT "%~2"=="-c" (
+    REM Run the generated Python file
+    python "%~dpn1.py"
+)
