@@ -13,14 +13,17 @@
 
 ## Confirmed Coming Soon
 
+- Ternary operator (probably going to copy js)
 - Full rewrite (code too ugly)
 
 ## Confirmed Never Coming Soon
 
 - Classes; object orientation sucks.
 
-## How to work .bat file
+## How to work bat file (for dummies)
 
 - Just run the .bat file with the parameter of your Syphon file!
-- Example: `.\syphon.bat PythonButSlower.syp`
+- Example: `.\syphon PythonButSlower.syp`
 - (I include " .\ " because my machine is weird, you probably wont have to)
+- To only *Compile* Syphon and not run it just add `-c` to the end!!
+- Example: `.\syphon ILoveSyphon.syp -c`
