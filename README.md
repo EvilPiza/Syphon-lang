@@ -1,6 +1,6 @@
 # Syphon
 
-*Syphon: The Worst Language You Could Ever Learn*.
+*Syphon Your Time Out The Window*.
 
 ## Features (So Far)
 
