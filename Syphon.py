@@ -7,7 +7,7 @@ def invalid_name(item, item_class):
                 raise NameError(f"Invalid Name for '{item}' {item_class}")
                 
 def is_this_variable_defined(list1, text):
-    text = text.split(" ")
+    text = text.strip().split(" ")
     for item1 in list1:
         if item1[:-1] == text[0]:
             return [item1[:-1], "YES"]
@@ -28,7 +28,9 @@ def variable_operation(list1, text):
                 return ["Multiplication", i, text[2]]
             if text[1] == '/=':
                 return ["Division", i, text[2]]
-        if i == text[0]:
+            if text[0] in list1:
+                return ["Variable Reassignment", i, text[2]]
+        if i == text[0] or i == text[1]:
             return ["Variable Reassignment", i]
         if text[0][-3:] == '++;':
             return ["Increment Operator", i]
@@ -48,7 +50,7 @@ def syphon_interpreter(filename, tokens):
                 tokens[func + 2] = tokens[func + 2][1:-1]
                 file.write(f'def {tokens[func + 1]}(')
                 tokens[func + 2] = tokens[func + 2].split(',')
-                if tokens[func + 2][0] == tokens[func + 2][-1]:
+                if tokens[func + 2][0] == tokens[func + 2][-1] and tokens[func + 2][0] != 'NO PARAMS':
                     param = str(tokens[func + 2])[2:-2].split(' ')
                     if param != ['']:
                         default_value = "NONE"
@@ -59,6 +61,9 @@ def syphon_interpreter(filename, tokens):
                             file.write(f'{param[1]}: {param[0]} = {default_value}')
                         else:
                             file.write(f'{param[1]}: {param[0]}')
+                elif tokens[func + 2][0] == 'NO PARAMS':
+                    pass
+                    # No parameters, no write
                 else:
                     for i in tokens[func + 2]:
                         i = i.split(' ')
@@ -142,28 +147,28 @@ def syphon_interpreter(filename, tokens):
                 tokens[var + 3] = f"{tokens[var + 3]}: {tokens[var + 1].lower()}"
                 if tokens[var + 4] == "DECLARED":
                     if tokens[var + 1] == "INT":
-                        file.write(f"{tokens[var + 3]} = 0\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = 0\n")
                     elif tokens[var + 1] == "STR":
-                        file.write(f"{tokens[var + 3]} = ''\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = ''\n")
                     elif tokens[var + 1] == "FLOAT":
-                        file.write(f"{tokens[var + 3]} = 0.0\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = 0.0\n")
                     elif tokens[var + 1] == "BOOL":
-                        file.write(f"{tokens[var + 3]} = False\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = False\n")
                     elif tokens[var + 1] == "ARRAY":
-                        file.write(f"{tokens[var + 3]} = []\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = []\n")
                 elif tokens[var + 4][:16] == 'console.readline':
                     if tokens[var + 1] == "INT":
-                        file.write(f"{tokens[var + 3]} = int(input{tokens[var + 4][16:]})\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input{tokens[var + 4][16:]})\n")
                     elif tokens[var + 1] == "STR":
-                        file.write(f"{tokens[var + 3]} = input{tokens[var + 4][16:]}\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = input{tokens[var + 4][16:]}\n")
                     elif tokens[var + 1] == "FLOAT":
-                        file.write(f"{tokens[var + 3]} = float(input{tokens[var + 4][16:]})\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = float(input{tokens[var + 4][16:]})\n")
                     elif tokens[var + 1] == "BOOL":
-                        file.write(f"{tokens[var + 3]} = bool(input{tokens[var + 4][16:]})\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = bool(input{tokens[var + 4][16:]})\n")
                     elif tokens[var + 1] == "ARRAY":
-                        file.write(f"{tokens[var + 3]} = input({tokens[var + 3]}).split(' ')")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = input({tokens[var + 3]}).split(' ')")
                 else:
-                    file.write(f"{tokens[var + 3]} = {tokens[var + 4]}\n")
+                    file.write('\t'*indents+f"{tokens[var + 3]} = {tokens[var + 4]}\n")
             if token == "END":
                 indents -= 1
                 #tokens = tokens[tokens.index("END") + 1:]
@@ -183,7 +188,7 @@ def syphon_interpreter(filename, tokens):
                 call_value = tokens[index+2]
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
-                file.write('\t'*indents+'__'+func_name+'__'+' = '+func_name+call_value+'\n')
+                file.write('\t'*indents+'_'+func_name+'_'+' = '+func_name+call_value+'\n')
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
@@ -233,11 +238,14 @@ def syphon_tokenizer(filepath):
                 invalid_name(func_params, 'Function Parameters')
                 tokens.append(f'FUNCTION:')
                 tokens.append(func_name)
-                for i in func_params[1:-1].split(','):
-                    type_, var = i.split(' ')
-                    variables.append(var)
-                    variables.append(type_)
-                tokens.append(func_params)
+                if func_params.split() != ['()']:
+                    for i in func_params[1:-1].split(','):
+                        type_, var = i.split(' ')
+                        variables.append(var)
+                        variables.append(type_)
+                    tokens.append(func_params)
+                else:
+                    tokens.append('.NO PARAMS.')
                 tokens.append(func_type)
                 Function = True
             
@@ -319,7 +327,7 @@ def syphon_tokenizer(filepath):
                         func_type = tokens[indx + 3]
                         func_name_is_defined = True
                 if func_name_is_defined:
-                    variables.append('__'+func_name+'__')
+                    variables.append('_'+func_name+'_')
                 else:
                     raise NameError(f'Function \'{func_name}\' is undefined!')
                 variables.append(func_type)
@@ -390,7 +398,6 @@ def syphon_tokenizer(filepath):
                     variables.append(name[1][:-1])
                     variables.append(var_type.upper())
                     
-                    
             elif '} ' in line or '}\n' in line:
                 line = line.strip()
                 tokens.append("END")
@@ -418,7 +425,7 @@ def syphon_tokenizer(filepath):
                 for i in line.split(' '):
                     if i in variables:
                         pass 
-                    # DO SHOULD NOT RUN vvv
+                    # SHOULD NOT RUN vvv
                 line = line.strip()
                 tokens.append('INPUT:')
                 func_input = line[index + 9:-1]
@@ -450,6 +457,12 @@ def syphon_tokenizer(filepath):
                 raise NameError(f"Variable '{line.split()[0]}' is undefined")
             
             elif variable_operation(variables, line)[0] == "Variable Reassignment":
+                if line.split()[0] == 'int':
+                    print(line)
+                    line = line.split()[1:]
+                    print(line)
+                    line = ' '.join(line)
+                    print(line)
                 if line.split()[2][:16] == 'console.readline':
                     var_value = 'input'+line[line.index('readline(')+8:-1]
                 else:
