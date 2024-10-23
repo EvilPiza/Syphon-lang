@@ -34,5 +34,5 @@ call main(100)
 // This obviously calls the function we declared earlier
 // This feature (I don't think I stole,) is Syphon's one unique thing so far!! :) 
 
-console.print(__main__)
-// The call keyword sets the value of the function it called to a variable formatted like this: '__{function name}__'
+console.print(_main_)
+// The call keyword sets the value of the function it called to a variable formatted like this: '_{function name}_'
