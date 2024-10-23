@@ -30,7 +30,7 @@ def variable_operation(list1, text):
                 return ["Division", i, text[2]]
             if text[0] in list1:
                 return ["Variable Reassignment", i, text[2]]
-        if i == text[0] or i == text[1]:
+        if i == text[0]:
             return ["Variable Reassignment", i]
         if text[0][-3:] == '++;':
             return ["Increment Operator", i]
