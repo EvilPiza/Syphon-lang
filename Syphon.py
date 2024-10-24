@@ -30,14 +30,14 @@ def variable_operation(list1, text):
                 return ["Division", i, text[2]]
             if text[0] in list1:
                 return ["Variable Reassignment", i, text[2]]
-        if i == text[0]:
-            return ["Variable Reassignment", i]
         if text[0][-3:] == '++;':
-            return ["Increment Operator", i]
-        elif text[0][-3:] == '--;':
-            return ["Decrement Operator", i]
-        elif text[0].strip() == '}':
+            return ["Increment Operator", text[0][:-3]]
+        if text[0][-3:] == '--;':
+            return ["Decrement Operator", text[0][:-3]]
+        if text[0].strip() == '}':
             return ["End of file", i]
+        if i == text[0] or i == text[1]:
+            return ["Variable Reassignment", i]
     return ["Unknown Error"]
                 
 def syphon_interpreter(filename, tokens):
@@ -123,7 +123,7 @@ def syphon_interpreter(filename, tokens):
                 indents += 1
                 if tokens[index+3][0] == '&':
                     tokens[index+3] = tokens[index+3][1:].upper()
-                file.write('\t'*(indents-1)+f"for {tokens[index+2]} in {tokens[index+3]}:\t# Iterating over type '{tokens[index+1]}'\n")
+                file.write('\t'*(indents-1)+f"for {tokens[index+2]} in {tokens[index+3]}:\n")
             if token == "WHILE LOOP:":
                 indents += 1
                 file.write('\t'*(indents-1)+f'while {tokens[index+1][1:-1].strip()}:\n')
@@ -156,9 +156,9 @@ def syphon_interpreter(filename, tokens):
                         file.write('\t'*indents+f"{tokens[var + 3]} = False\n")
                     elif tokens[var + 1] == "ARRAY":
                         file.write('\t'*indents+f"{tokens[var + 3]} = []\n")
-                elif tokens[var + 4][:16] == 'console.readline':
+                elif tokens[var + 4][:6] == 'input(':
                     if tokens[var + 1] == "INT":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input{tokens[var + 4][16:]})\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input({tokens[var + 4][6:]})\n")
                     elif tokens[var + 1] == "STR":
                         file.write('\t'*indents+f"{tokens[var + 3]} = input{tokens[var + 4][16:]}\n")
                     elif tokens[var + 1] == "FLOAT":
@@ -179,6 +179,8 @@ def syphon_interpreter(filename, tokens):
                     file.write('\t'*indents+'return '+tokens[index + 1]+'\n')
             if token == 'INPUT:' and tokens[index - 1] != 'RETURN:':
                 file.write('\t'*indents+f'input({tokens[index + 1]})\n')
+            if token == 'APPEND:':
+                file.write('\t'*indents+tokens[index + 1]+'\n')
             if token == 'PRINT:':
                 file.write('\t'*indents+f'print({tokens[index + 1]})\n')
             if token == '\n':
@@ -188,7 +190,7 @@ def syphon_interpreter(filename, tokens):
                 call_value = tokens[index+2]
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
-                file.write('\t'*indents+'_'+func_name+'_'+' = '+func_name+call_value+'\n')
+                file.write('\t'*indents+func_name+' = '+func_name+call_value+'\n')
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
@@ -218,7 +220,7 @@ def syphon_interpreter(filename, tokens):
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
     file.close()
 
-def syphon_tokenizer(filepath):
+def syphon_tokenizer(filepath, mode=''):
     if not filepath[-4:] == '.syp':
         raise NameError("File Extension is incorrect, Syphon uses '.syp'")
     with open(filepath, "r") as file:
@@ -284,11 +286,12 @@ def syphon_tokenizer(filepath):
             elif 'foreach (' in line:
                 tokens.append('FOREACH LOOP:')
                 stuff = line[line.index('foreach (')+8:line.index('{')].strip()
+                # print(stuff[1:-1].split('; '))
                 var, iterable = stuff[1:-1].split('; ')
-                if var.split(' ')[0].upper() != variables[variables.index(iterable) - 1] and variables[variables.index(iterable) - 1] != "ARRAY":
-                    raise TypeError('Foreach variable type does not match the iterable')
                 tokens.append(var.split(' ')[0])
                 tokens.append(var.split(' ')[1])
+                variables.append(var.split(' ')[1])
+                variables.append(var.split(' ')[0])
                 tokens.append(iterable)
             
             elif 'while (' in line:
@@ -327,7 +330,7 @@ def syphon_tokenizer(filepath):
                         func_type = tokens[indx + 3]
                         func_name_is_defined = True
                 if func_name_is_defined:
-                    variables.append('_'+func_name+'_')
+                    variables.append(func_name)
                 else:
                     raise NameError(f'Function \'{func_name}\' is undefined!')
                 variables.append(func_type)
@@ -450,6 +453,10 @@ def syphon_tokenizer(filepath):
             
             elif '*/' in line:
                 tokens.append('MULTI-LINE END')
+                
+            elif '.append' in line:
+                tokens.append('APPEND:')
+                tokens.append(line.strip())
                     
             # When adding more stuff add it above this;
             # These are the blackhole statements vvv
@@ -458,11 +465,8 @@ def syphon_tokenizer(filepath):
             
             elif variable_operation(variables, line)[0] == "Variable Reassignment":
                 if line.split()[0] == 'int':
-                    print(line)
                     line = line.split()[1:]
-                    print(line)
                     line = ' '.join(line)
-                    print(line)
                 if line.split()[2][:16] == 'console.readline':
                     var_value = 'input'+line[line.index('readline(')+8:-1]
                 else:
