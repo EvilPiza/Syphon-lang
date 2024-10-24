@@ -13,6 +13,7 @@
 
 ## Confirmed Coming Soon
 
+- More list methods (this'll probably take 15 seconds)
 - Ternary operator (probably going to copy js)
 - Full rewrite (code too ugly)
 
