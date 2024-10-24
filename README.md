@@ -23,8 +23,7 @@
 ## How to work bat file (for dummies)
 
 - Just run the .bat file with the parameter of your Syphon file!
-- Example: `.\syphon PythonButSlower.syp`
-- (I include " .\ " because my machine is weird, you probably wont have to)
+- Example: `.\syphon PythonButSlower.syp` (I include " .\ " because my machine is weird, you probably wont have to)
 - To only *Compile* Syphon and not run it just add `-c` to the end!!
 - Example: `.\syphon ILoveSyphon.syp -c`
 - To delete the Python file after it runs add the `-d` parameter!! (it almost makes Syphon look like an independant language!!)
