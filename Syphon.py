@@ -145,7 +145,7 @@ def syphon_interpreter(filename, tokens, mode):
                 if tokens[var + 1] == "ARRAY":
                     tokens[var + 1] = "ANY"
                 if tokens[var + 4] == "DECLARED":
-                     tokens[var + 3] = f"{tokens[var + 3]}: {tokens[var + 1].lower()}"
+                    tokens[var + 3] = f"{tokens[var + 3]}: {tokens[var + 1].lower()}"
                     if tokens[var + 1] == "INT":
                         file.write('\t'*indents+f"{tokens[var + 3]} = 0\n")
                     elif tokens[var + 1] == "STR":
