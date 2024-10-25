@@ -1,38 +1,43 @@
-// This is a comment
+################################################
+# Multiplication Table written in normal Python
+################################################
 
-fn None main(int num) {
-  console.print(num)
+user_input: int = int(input('How many columns/rows?\n> '))
+for incrementor in range(user_input):
+	incrementor += 1
+	row: int = []
+	for stuff in range(user_input):
+		if len(row) == 0:
+			row.append(stuff + incrementor)
+		else:
+			row.append(row[-1] + incrementor)
+	for num in row:
+		print(num, end='\n' if num == row[-1] else '\t')
+
+
+################################################
+# Multiplication Table written in EPIC Syphon
+################################################
+
+int user_input = input('How many columns/rows?\n> ')
+foreach (int incrementor; range(user_input)) {
+    incrementor++;
+    int row = []
+    foreach (int stuff; range(user_input)) {
+        if (len(row) == 0) {
+            row.append(stuff + incrementor)
+        } else {
+            row.append(row[-1] + incrementor)
+        }
+    }
+    foreach (int num; row) {
+        console.println(num, end='\n' if num == row[-1] else '\t')
+    }
 }
-// This a function named 'main' its return type is 'None' it takes one parameter of int type named 'num' and then prints that parameter
 
-fn str is_this_a_string(str input_) {
-   return ("Yes! This is a string!") 
-}
-// This function would (probably) yell at you if you inputed anything but a string so uh yeah.
-// You HAVE to include parentheses when returning a value, i'm scared of semicolons, and this is the best alternative
-
-str user_input = console.readline("What is your favorite color?\n> ")
-// This asks the user what their favorite color is then saves it to a variable of str type, this variable is also mutable
-
-int& tax_rate = .5
-// This is an immutable variable, i know super epic
-
-if (tax_rate > .3) {
-  console.print("These tax rates are getting out of hand!")
-}
-// This is obviously an if statment, no else or elif yet, coming soon for sure
-
-// All the types so far are: int, str, bool, float, and array. Might add more in the future, might not.
-
-int& cool_list_of_numbers = [0, 4, 6, 3, 7]
-// Using any type besides 'array' means your declaring a non-mixed array, meaning it only holds one type of data.
-
-array mixed_list = ['hello!', True, 0, 4.3]
-// You can probably tell this is a 'mixed' array, it can hold any data type, how epic.
-
-call main(100)
-// This obviously calls the function we declared earlier
-// This feature (I don't think I stole,) is Syphon's one unique thing so far!! :) 
-
-console.print(main)
-// The call keyword sets the value of the function it called to a variable with the same name as the function
+############
+# Notes vvv
+############
+- I'm using hashtags but comments in Syphon are '//' or '/* + */' for a multi-line
+- The Syphon code was written by me, the Python was written by Syphon
+- This code uses the ternary operator in the last print statement but it doesn't quite exist yet (don't tell anyone)
