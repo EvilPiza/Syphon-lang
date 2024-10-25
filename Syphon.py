@@ -40,7 +40,7 @@ def variable_operation(list1, text):
             return ["Variable Reassignment", i]
     return ["Unknown Error"]
                 
-def syphon_interpreter(filename, tokens):
+def syphon_interpreter(filename, tokens, mode):
     with open(filename + '.py', 'w') as file:
         indents = 0
         for index, token in enumerate(tokens):
@@ -181,8 +181,10 @@ def syphon_interpreter(filename, tokens):
                 file.write('\t'*indents+f'input({tokens[index + 1]})\n')
             if token == 'APPEND:':
                 file.write('\t'*indents+tokens[index + 1]+'\n')
-            if token == 'PRINT:':
+            if token == 'PRINTLN:':
                 file.write('\t'*indents+f'print({tokens[index + 1]})\n')
+            if token == 'PRINT:':
+                file.write('\t'*indents+f'print({tokens[index + 1]}, end="")\n')
             if token == '\n':
                 file.write(token)
             if token == 'FUNCTION CALL:':
@@ -218,6 +220,10 @@ def syphon_interpreter(filename, tokens):
             if token == "DIVISION:":
                 current_line = tokens.index(token)
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
+    if mode == '-d' or mode != '-c':
+        system('python {}.py'.format(filename))
+        if mode == '-d':
+            remove('{}.py'.format(filename))
     file.close()
 
 def syphon_tokenizer(filepath, mode=''):
@@ -225,7 +231,7 @@ def syphon_tokenizer(filepath, mode=''):
         raise NameError("File Extension is incorrect, Syphon uses '.syp'")
     with open(filepath, "r") as file:
         variables = []
-        supported_variable_types = ['int ', 'str ', 'float ', 'bool ', 'array ']
+        supported_variable_types = ['int ', 'str ', 'float ', 'bool ', 'array ', 'any ']
         tokens = []
         Function = False
         for index, line in enumerate(file):
@@ -377,7 +383,11 @@ def syphon_tokenizer(filepath, mode=''):
                         elif var_type == "array":
                             if not '[' in var_value and not ']' in var_value:
                                 raise ValueError("Type 'array' variable is set to an incorrect type")
-                                
+                            
+                        elif var_type == "any":
+                            pass
+                            # Anything can be anything
+                            
                     tokens.append(var_type.upper())
                     if name[0][-1] == "&":
                         tokens.append("IMMUTABLE")
@@ -432,6 +442,16 @@ def syphon_tokenizer(filepath, mode=''):
                 line = line.strip()
                 tokens.append('INPUT:')
                 func_input = line[index + 9:-1]
+                tokens.append(func_input)
+                
+            elif 'console.println' in line:
+                line = line.strip()
+                tokens.append('PRINTLN:')
+                func_input = line[line.index('print') + 8:-1]
+                func_input = func_input.split(' ')
+                if func_input[0][0] == '&':
+                    func_input[0] = func_input[0][1:].upper()
+                func_input = ' '.join(func_input)
                 tokens.append(func_input)
                 
             elif 'console.print' in line:
@@ -566,6 +586,6 @@ def syphon_tokenizer(filepath, mode=''):
         file.close()
         #print(variables)
         #print(tokens)
-        syphon_interpreter(filepath[:-4], tokens)
+        syphon_interpreter(filepath[:-4], tokens, mode)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
