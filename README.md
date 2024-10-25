@@ -20,7 +20,7 @@
 
 ## Confirmed Never Coming Soon
 
-- Classes; object orientation sucks.
+- Classes, functional programming is way better.
 
 ## How to work bat file (for dummies)
 
