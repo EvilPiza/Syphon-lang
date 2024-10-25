@@ -40,7 +40,7 @@ def variable_operation(list1, text):
             return ["Variable Reassignment", i]
     return ["Unknown Error"]
                 
-def syphon_interpreter(filename, tokens, mode):
+def syphon_interpreter(filename, tokens):
     with open(filename + '.py', 'w') as file:
         indents = 0
         for index, token in enumerate(tokens):
@@ -220,10 +220,6 @@ def syphon_interpreter(filename, tokens, mode):
             if token == "DIVISION:":
                 current_line = tokens.index(token)
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
-    if mode == '-d' or mode != '-c':
-        system('python {}.py'.format(filename))
-        if mode == '-d':
-            remove('{}.py'.format(filename))
     file.close()
 
 def syphon_tokenizer(filepath, mode=''):
@@ -586,6 +582,6 @@ def syphon_tokenizer(filepath, mode=''):
         file.close()
         #print(variables)
         #print(tokens)
-        syphon_interpreter(filepath[:-4], tokens, mode)
+        syphon_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
