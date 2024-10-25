@@ -2,7 +2,7 @@
 # Multiplication Table written in normal Python
 ################################################
 
-user_input: int = int(input('How many columns/rows?\n> '))
+user_input = int(input('How many columns/rows?\n> '))
 for incrementor in range(user_input):
 	incrementor += 1
 	row: int = []
