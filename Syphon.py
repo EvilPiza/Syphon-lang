@@ -30,10 +30,12 @@ def variable_operation(list1, text):
                 return ["Division", i, text[2]]
             if text[0] in list1:
                 return ["Variable Reassignment", i, text[2]]
-        if text[0][-3:] == '++;':
-            return ["Increment Operator", text[0][:-3]]
-        if text[0][-3:] == '--;':
-            return ["Decrement Operator", text[0][:-3]]
+        if '++' in text[0]:
+            name, incrementor = text[0].split('++')
+            return ["Increment Operator", name, incrementor]
+        if '--' in text[0]:
+            name, decrementor = text[0].split('--')
+            return ["Decrement Operator", name, decrementor]
         if text[0].strip() == '}':
             return ["End of file", i]
         if i == text[0] or i == text[1]:
@@ -203,11 +205,11 @@ def syphon_interpreter(filename, tokens):
             if token == "VAR REASSIGNMENT:":
                 file.write('\t'*indents+tokens[index + 1]+" = "+tokens[index + 2]+'\n')
             if token == "INCREMENT OPERATOR:":
-                current_line = tokens.index(token)
-                file.write('\t'*indents+tokens[current_line + 1]+" += 1\n")
+                current_line = index
+                file.write('\t'*indents+tokens[current_line + 1]+" += "+tokens[current_line + 2][:-1]+"\n")
             if token == "DECREMENT OPERATOR:":
-                current_line = tokens.index(token)
-                file.write('\t'*indents+tokens[current_line + 1]+" -= 1\n")
+                current_line = index
+                file.write('\t'*indents+tokens[current_line + 1]+" -= "+tokens[current_line + 2][:-1]+"\n")
             if token == "ADDITION:":
                 current_line = tokens.index(token)
                 file.write('\t'*indents+tokens[current_line + 1]+" += "+tokens[current_line + 2]+"\n")
@@ -222,7 +224,7 @@ def syphon_interpreter(filename, tokens):
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
     file.close()
 
-def syphon_tokenizer(filepath, mode=''):
+def syphon_tokenizer(filepath):
     if not filepath[-4:] == '.syp':
         raise NameError("File Extension is incorrect, Syphon uses '.syp'")
     with open(filepath, "r") as file:
@@ -391,6 +393,8 @@ def syphon_tokenizer(filepath, mode=''):
                     else:
                         tokens.append("MUTABLE")
                         variables.append(name[1])
+                    if var_value[:17] == 'console.readline(':
+                        var_value = 'input'+var_value[16:]
                     tokens.append(name[1])
                     variables.append(var_type.upper())
                     tokens.append(var_value.strip())
@@ -496,11 +500,16 @@ def syphon_tokenizer(filepath, mode=''):
             elif variable_operation(variables, line)[0] == "Increment Operator":
                 tokens.append("INCREMENT OPERATOR:")
                 name = variable_operation(variables, line)[1]
+                incrementor = variable_operation(variables, line)[2]
                 if name[-1] == ';':
                     name = name[:-1]
                 if name[0] == '&':
                     raise SyntaxError("Immutable value cannot be incremented")
                 tokens.append(name)
+                if incrementor == ';':
+                    tokens.append(1)
+                else:
+                    tokens.append(incrementor)
                         
             elif variable_operation(variables, line)[0] == "Decrement Operator":
                 tokens.append("DECREMENT OPERATOR:")
