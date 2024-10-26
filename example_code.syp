@@ -19,7 +19,7 @@ for incrementor in range(user_input):
 # Multiplication Table written in EPIC Syphon
 ################################################
 
-int user_input = input('How many columns/rows?\n> ')
+int user_input = console.readline('How many columns/rows?\n> ')
 foreach (int incrementor; range(user_input)) {
     incrementor++;
     int row = []
