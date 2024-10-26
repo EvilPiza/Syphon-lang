@@ -29,3 +29,7 @@
 - To only *Compile* Syphon and not run it just add `-c` to the end!!
 - Example: `.\syphon ILoveSyphon.syp -c`
 - To delete the Python file after it runs add the `-d` parameter!!
+
+  ## Official Syphon Logo!!
+  
+![SyphonLogo](https://github.com/user-attachments/assets/a117d966-664e-4ab2-958c-7a96a25edd5b)
