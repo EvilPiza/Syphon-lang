@@ -13,12 +13,16 @@ def is_this_variable_defined(list1, text):
             return [item1[:-1], "YES"]
         elif item1[:-1]+"&" == text[0]:
             return [item1[:-1], "IMMUTABLE"]
+        elif item1[:-1]+'[]' == text[0]:
+            return [item1[:-1]+'[]', "ARRAY"]
     return None
 
 def variable_operation(list1, text):
     text = text.split()
     for i in list1:
         i = i.strip()
+        if i[-1] == ';':
+            i = i[:-1]
         if len(text) > 2:
             if text[1] == '+=':
                 return ["Addition", i, text[2]]
@@ -32,9 +36,13 @@ def variable_operation(list1, text):
                 return ["Variable Reassignment", i, text[2]]
         if '++' in text[0]:
             name, incrementor = text[0].split('++')
+            if incrementor == ';':
+                incrementor = '1;'
             return ["Increment Operator", name, incrementor]
         if '--' in text[0]:
             name, decrementor = text[0].split('--')
+            if incrementor == ';':
+                incrementor = '1;'
             return ["Decrement Operator", name, decrementor]
         if text[0].strip() == '}':
             return ["End of file", i]
@@ -146,31 +154,35 @@ def syphon_interpreter(filename, tokens):
                     tokens[var + 3] = tokens[var + 3].upper()
                 if tokens[var + 1] == "ARRAY":
                     tokens[var + 1] = "ANY"
+                elif tokens[var + 1][-2:] == '[]':
+                    tokens[var + 1] = f'list[{tokens[var + 1][:-2].lower()}]'
+                else:
+                    tokens[var + 1] = tokens[var + 1].lower()
                 if tokens[var + 4] == "DECLARED":
                     tokens[var + 3] = f"{tokens[var + 3]}: {tokens[var + 1].lower()}"
-                    if tokens[var + 1] == "INT":
+                    if tokens[var + 1] == "int":
                         file.write('\t'*indents+f"{tokens[var + 3]} = 0\n")
-                    elif tokens[var + 1] == "STR":
+                    elif tokens[var + 1] == "str":
                         file.write('\t'*indents+f"{tokens[var + 3]} = ''\n")
-                    elif tokens[var + 1] == "FLOAT":
+                    elif tokens[var + 1] == "float":
                         file.write('\t'*indents+f"{tokens[var + 3]} = 0.0\n")
-                    elif tokens[var + 1] == "BOOL":
+                    elif tokens[var + 1] == "bool":
                         file.write('\t'*indents+f"{tokens[var + 3]} = False\n")
-                    elif tokens[var + 1] == "ARRAY":
+                    elif tokens[var + 1] == "array":
                         file.write('\t'*indents+f"{tokens[var + 3]} = []\n")
                 elif tokens[var + 4][:6] == 'input(':
-                    if tokens[var + 1] == "INT":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input({tokens[var + 4][6:]})\n")
-                    elif tokens[var + 1] == "STR":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = input{tokens[var + 4][16:]}\n")
-                    elif tokens[var + 1] == "FLOAT":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = float(input{tokens[var + 4][16:]})\n")
-                    elif tokens[var + 1] == "BOOL":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = bool(input{tokens[var + 4][16:]})\n")
-                    elif tokens[var + 1] == "ARRAY":
+                    if tokens[var + 1] == "int":
+                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input({tokens[var + 4][5:]})\n")
+                    elif tokens[var + 1] == "str":
+                        file.write('\t'*indents+f"{tokens[var + 3]} = input{tokens[var + 4][5:]}\n")
+                    elif tokens[var + 1] == "float":
+                        file.write('\t'*indents+f"{tokens[var + 3]} = float(input{tokens[var + 4][5:]})\n")
+                    elif tokens[var + 1] == "bool":
+                        file.write('\t'*indents+f"{tokens[var + 3]} = bool(input{tokens[var + 4][5:]})\n")
+                    elif tokens[var + 1] == "array":
                         file.write('\t'*indents+f"{tokens[var + 3]} = input({tokens[var + 3]}).split(' ')")
                 else:
-                    file.write('\t'*indents+f"{tokens[var + 3]} = {tokens[var + 4]}\n")
+                    file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
             if token == "END":
                 indents -= 1
                 #tokens = tokens[tokens.index("END") + 1:]
@@ -358,12 +370,12 @@ def syphon_tokenizer(filepath):
                         elif name[1] in variables:
                             raise SyntaxError(f"Variable '{name[1]}' is already defined")
                             
-                        elif var_type == "int":
+                        elif var_type == "int" or var_type == "int[]":
                             for char in var_value:
                                 if not char in "1234567890":
                                     raise ValueError("Type 'int' variable set to incorrect type")
                                         
-                        elif var_type == "float":
+                        elif var_type == "float" or var_type == "float[]":
                             for char in var_value:
                                 if not char in "1234567890.":
                                     raise ValueError("Type 'float' variable is set to an incorrect type")
@@ -374,7 +386,7 @@ def syphon_tokenizer(filepath):
                             except:
                                 raise ValueError("Type 'float' variable is set to an invalid type")
                             
-                        elif var_type == "bool":
+                        elif var_type == "bool" or var_type == "bool[]":
                             if var_value != "True" and    var_value != 'False':
                                 raise ValueError("Type 'bool' variable is set to an incorrect type")
                         
@@ -441,7 +453,7 @@ def syphon_tokenizer(filepath):
                     # SHOULD NOT RUN vvv
                 line = line.strip()
                 tokens.append('INPUT:')
-                func_input = line[index + 9:-1]
+                func_input = line[index + 11:-1]
                 tokens.append(func_input)
                 
             elif 'console.println' in line:
@@ -494,7 +506,7 @@ def syphon_tokenizer(filepath):
                 tokens.append("VAR REASSIGNMENT:")
                 if variable_operation(variables, line)[-1][0] == '&':
                     raise SyntaxError("Immutable value cannot be reassigned")
-                tokens.append(variable_operation(variables, line)[-1])
+                tokens.append(line.split('=')[0].strip())
                 tokens.append(var_value)
                     
             elif variable_operation(variables, line)[0] == "Increment Operator":
@@ -525,10 +537,12 @@ def syphon_tokenizer(filepath):
                     raise SyntaxError("Immutable values cannot be changed")
                 tokens.append(name)
                 value_added = "".join(line).split()[-1]
-                try:
-                    is_this_variable_defined_ = variables[variables.index(value_added)]
-                except:
-                    raise SyntaxError(f"Variable '{value_added}' is undefined")
+                for i in value_added:
+                    if not i in '1234567890':
+                        try:
+                            is_this_variable_defined_ = variables[variables.index(value_added)]
+                        except:
+                            raise SyntaxError(f"Variable '{value_added}' is undefined")
                 if value_added[0] == "&":
                     value_added = value_added[1:].upper()
                 else:
@@ -542,10 +556,12 @@ def syphon_tokenizer(filepath):
                     raise SyntaxError("Immutable values cannot be changed")
                 tokens.append(name)
                 value_added = "".join(line).split()[-1]
-                try:
-                    is_this_variable_defined_ = variables[variables.index(value_added)]
-                except:
-                    raise SyntaxError(f"Variable '{value_added}' is undefined")
+                for i in value_added:
+                    if not i in '1234567890':
+                        try:
+                            is_this_variable_defined_ = variables[variables.index(value_added)]
+                        except:
+                            raise SyntaxError(f"Variable '{value_added}' is undefined")
                 if value_added[0] == "&":
                     value_added = value_added[1:].upper()
                 else:
@@ -578,10 +594,12 @@ def syphon_tokenizer(filepath):
                     raise SyntaxError("Immutable values cannot be changed")
                 tokens.append(name)
                 value_added = "".join(line).split()[-1]
-                try:
-                    is_this_variable_defined_ = variables[variables.index(value_added)]
-                except:
-                    raise SyntaxError(f"Variable '{value_added}' is undefined")
+                for i in value_added:
+                    if not i in '1234567890':
+                        try:
+                            is_this_variable_defined_ = variables[variables.index(value_added)]
+                        except:
+                            raise SyntaxError(f"Variable '{value_added}' is undefined")
                 if value_added[0] == "&":
                     value_added = value_added[1:].upper()
                 else:
