@@ -12,7 +12,7 @@
 
 ## Confirmed Coming Soon
 
-- Ternary operator (probably going to copy js) (This **ISN'T** confirmed coming soon; I just don't have a section for this)
+- Ternary operator (expect this in a few days)
 - Full rewrite (code too ugly)
 
 ## Confirmed Never Coming Soon
