@@ -7,7 +7,6 @@
 - Conditionals (`if`, `elif`, and `else`)
 - Loops (`for`, `foreach`, and `while`)
 - Variable declarations (mutable and immutable)
-- Weird function stuff (`call` keyword, read example_code.syp for clairification)
 - Basic arithmetic operations (`+`, `-`, `*`, `/`, `++;`, `--;`, `+=`, `-=`, `*=`, `/=`)
 - Optional static typing (You can use the `any` type to bypass)
 
