@@ -185,7 +185,7 @@ def syphon_interpreter(filename, tokens):
                         file.write('\t'*indents+f"{tokens[var + 3]} = []\n")
                 elif tokens[var + 4][:6] == 'input(':
                     if tokens[var + 1] == "int":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input({tokens[var + 4][5:]})\n")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = int(input{tokens[var + 4][5:]})\n")
                     elif tokens[var + 1] == "str":
                         file.write('\t'*indents+f"{tokens[var + 3]} = input{tokens[var + 4][5:]}\n")
                     elif tokens[var + 1] == "float":
