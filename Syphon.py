@@ -166,7 +166,7 @@ def syphon_interpreter(filename, tokens):
                 if tokens[var + 2] == "IMMUTABLE":
                     tokens[var + 3] = tokens[var + 3].upper()
                 if tokens[var + 1] == "ARRAY":
-                    tokens[var + 1] = "ANY"
+                    tokens[var + 1] = "array"
                 elif tokens[var + 1][-2:] == '[]':
                     tokens[var + 1] = f'list[{tokens[var + 1][:-2].lower()}]'
                 else:
@@ -193,7 +193,7 @@ def syphon_interpreter(filename, tokens):
                     elif tokens[var + 1] == "bool":
                         file.write('\t'*indents+f"{tokens[var + 3]} = bool(input{tokens[var + 4][5:]})\n")
                     elif tokens[var + 1] == "array":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = input({tokens[var + 3]}).split(' ')")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = input({tokens[var + 4]}).split(' ')")
                 else:
                     file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
             if token == "END":
@@ -730,7 +730,7 @@ def syphon_tokenizer(filepath):
                         
         file.close()
         #print(variables)
-        #print(tokens)
+        print(tokens)
         syphon_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
