@@ -34,20 +34,21 @@ def variable_operation(list1, text):
                 return ["Division", i, text[2]]
             if text[0] in list1:
                 return ["Variable Reassignment", i, text[2]]
-        if '++' in text[0]:
-            name, incrementor = text[0].split('++')
-            if incrementor == ';':
-                incrementor = '1;'
-            return ["Increment Operator", name, incrementor]
-        if '--' in text[0]:
-            name, decrementor = text[0].split('--')
-            if incrementor == ';':
-                incrementor = '1;'
-            return ["Decrement Operator", name, decrementor]
-        if text[0].strip() == '}':
-            return ["End of file", i]
-        if i == text[0] or i == text[1]:
-            return ["Variable Reassignment", i]
+        elif len(text) >= 1:
+            if '++' in text[0]:
+                name, incrementor = text[0].split('++')
+                if incrementor == ';':
+                    incrementor = '1;'
+                return ["Increment Operator", name, incrementor]
+            if '--' in text[0]:
+                name, decrementor = text[0].split('--')
+                if incrementor == ';':
+                    incrementor = '1;'
+                return ["Decrement Operator", name, decrementor]
+            if text[0].strip() == '}':
+                return ["End of file", i]
+            if i == text[0] or i == text[1]:
+                return ["Variable Reassignment", i]
     return ["Unknown Error"]
                 
 def syphon_interpreter(filename, tokens):
@@ -105,28 +106,40 @@ def syphon_interpreter(filename, tokens):
                 for i in tokens[index + 1]:
                     i = i.strip()
                     conditional.append(i)
-                type_, var = conditional[0].split(' ')
-                if type_ == 'int':
-                    default_value = 0
-                elif type_ == 'str':
-                    default_value = "''"
-                elif type_ == 'float':
-                    default_value = 0.0
-                elif type_ == 'bool':
-                    default_value = False
-                elif type_ == 'array':
-                    default_value = "[]"
-                if conditional[2][1:] == '++':
-                    conditional[2] = conditional[2][:1]+' += 1'
-                    I_coded_this_weird = "+ 1"
-                elif conditional[2][1:] == '--':
-                    conditional[2] = conditional[2][:1]+' -= 1'
-                    I_coded_this_weird = "- 1"
+                if '=' not in conditional[0]:
+                    # Default value
+                    type_, var = conditional[0].split(' ')
+                    if type_ == 'int':
+                        default_value = 0
+                    elif type_ == 'str':
+                        default_value = "''"
+                    elif type_ == 'float':
+                        default_value = 0.0
+                    elif type_ == 'bool':
+                        default_value = False
+                    elif type_ == 'array':
+                        default_value = "[]"
+                else:
+                    conditional[0] = conditional[0].split(' ')[1:]
+                    var = conditional[0][0]
+                    default_value = conditional[0][-1]
                 if conditional[1][4:8] == 'len(':
                     if conditional[1][8] == '&':
                         conditional[1] = conditional[1][:8]+conditional[1][9:-1].upper()+')'
+                if '++' in conditional[-1]:
+                    if conditional[-1][conditional[-1].index('++')+2:] == '':
+                        conditional[-1] = conditional[-1][:-2]+' += 1'
+                    elif conditional[-1][conditional[-1].index('++')+2:][-1] in '0123456789':
+                        conditional[-1] = conditional[-1][:conditional[-1].index('++')]+' += '+conditional[-1][conditional[-1].index('++')+2:]
+                        
+                elif '--' in conditional[-1]:
+                    if conditional[-1][conditional[-1].index('--')+2:] == '':
+                        conditional[-1] = conditional[-1][:-2]+' -= 1'
+                    elif conditional[-1][conditional[-1].index('--')+2:][-1] in '0123456789':
+                        conditional[-1] = conditional[-1][:conditional[-1].index('--')]+' -= '+conditional[-1][conditional[-1].index('--')+2:]
+                        
                 file.write('\t'*(indents-1)+f'{var} = {default_value}\n')
-                file.write('\t'*(indents-1)+f'while {conditional[1]} {I_coded_this_weird}:\n')
+                file.write('\t'*(indents-1)+f'while {conditional[1]}:\n')
 
                 file.write('\t'*indents+f'{conditional[2]}\n')
             if token == "FOREACH LOOP:":
@@ -185,28 +198,48 @@ def syphon_interpreter(filename, tokens):
                     file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
             if token == "END":
                 indents -= 1
-                #tokens = tokens[tokens.index("END") + 1:]
+                file.write('\n')
+                # For spacing purposes
             if token == 'RETURN:' and indents > 0:
                 if tokens[index + 1] == 'INPUT:':
                     file.write('\t'*indents+f'return (input({tokens[index + 2]}))\n')
+                elif tokens[index + 1] == 'TERNARY:':
+                    conditional, true, false = tokens[index + 2].split(';')
+                    file.write('\t'*indents+f'return ({true} if {conditional} else {false})')
                 else:
                     file.write('\t'*indents+'return '+tokens[index + 1]+'\n')
             if token == 'INPUT:' and tokens[index - 1] != 'RETURN:':
                 file.write('\t'*indents+f'input({tokens[index + 1]})\n')
-            if token == 'APPEND:':
+            if token == 'LIST METHOD:':
                 file.write('\t'*indents+tokens[index + 1]+'\n')
             if token == 'PRINTLN:':
-                file.write('\t'*indents+f'print({tokens[index + 1]})\n')
+                if tokens[index + 1] == 'TERNARY:':
+                    file.write('\t'*indents+f'print({tokens[index + 3]} if {tokens[index + 2]} else {tokens[index + 4]})\n')
+                else:
+                    file.write('\t'*indents+f'print({tokens[index + 1]})\n')
             if token == 'PRINT:':
-                file.write('\t'*indents+f'print({tokens[index + 1]}, end="")\n')
+                if tokens[index + 1] == 'TERNARY:':
+                    file.write('\t'*indents+f'print({tokens[index + 3]} if {tokens[index + 2]} else {tokens[index + 4]})\n')
+                else:    
+                    file.write('\t'*indents+f'print({tokens[index + 1]}, end="")\n')
             if token == '\n':
-                file.write(token)
+                file.write('\n')
             if token == 'FUNCTION CALL:':
                 func_name = tokens[index+1]
                 call_value = tokens[index+2]
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
-                file.write('\t'*indents+func_name+' = '+func_name+call_value+'\n')
+                file.write('\t'*indents+'_'+func_name+'_ = '+func_name+call_value+'\n')
+            if token == 'MATCH:':
+                match_variable = tokens[index + 1]
+            if token == 'FIND:':
+                if tokens[index - 2] == 'MATCH:':
+                    file.write('\t'*indents+f'if {match_variable} == {tokens[index + 1]}:\n')
+                    indents += 1
+                elif tokens[index + 1] == '_':
+                    file.write('\t'*(indents-1)+'else:\n')
+                else:
+                    file.write('\t'*(indents-1)+f'elif {match_variable} == {tokens[index + 1]}:\n')
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
@@ -223,17 +256,19 @@ def syphon_interpreter(filename, tokens):
                 current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" -= "+tokens[current_line + 2][:-1]+"\n")
             if token == "ADDITION:":
-                current_line = tokens.index(token)
+                current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" += "+tokens[current_line + 2]+"\n")
             if token == "SUBTRACTION:":
-                current_line = tokens.index(token)
+                current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" -= "+tokens[current_line + 2]+"\n")
             if token == "MULTIPLICATION:":
-                current_line = tokens.index(token)
+                current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" *= "+tokens[current_line + 2]+"\n")
             if token == "DIVISION:":
-                current_line = tokens.index(token)
+                current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
+            if token == "TERNARY:" and (tokens[index - 1] != 'PRINTLN:' and tokens[index - 1] != 'PRINT:') and tokens[index - 1] != 'RETURN:':
+                file.write('\t'*indents+tokens[index + 2]+' if '+tokens[index + 1]+' else '+tokens[index + 3]+'\n')
     file.close()
 
 def syphon_tokenizer(filepath):
@@ -246,7 +281,12 @@ def syphon_tokenizer(filepath):
         Function = False
         for index, line in enumerate(file):
             for_loop_result = is_this_variable_defined(supported_variable_types, line)
-            if 'fn ' in line:
+            
+            if '//' in line:
+                tokens.append('COMMENT:')
+                tokens.append(line[2:])
+                
+            elif 'fn ' in line:
                 try:
                     func_type, func_name = line[line.index('fn ') + 3:line.index('(')].strip().split(' ')
                 except:
@@ -350,6 +390,17 @@ def syphon_tokenizer(filepath):
                 else:
                     raise NameError(f'Function \'{func_name}\' is undefined!')
                 variables.append(func_type)
+                
+            elif 'match (' in line.strip() or 'match(' in line.strip():
+                match_variable = line[line.index('(')+1:line.index(')')]
+                tokens.append('MATCH:')
+                tokens.append(match_variable)
+            
+            elif 'find (' in line.strip() or 'find(' in line.strip():
+                find_value = line[line.index('(')+1:line.index(')')]
+                tokens.append('FIND:')
+                tokens.append(find_value)
+                
                     
             # Variables
             elif type(for_loop_result).__name__ == "list":
@@ -406,7 +457,12 @@ def syphon_tokenizer(filepath):
                         tokens.append("MUTABLE")
                         variables.append(name[1])
                     if var_value[:17] == 'console.readline(':
-                        var_value = 'input'+var_value[16:]
+                        if '<' in var_value and '>' in var_value:
+                            var_value = var_value[18:-2]
+                            conditional, true, false = var_value.split(';')
+                            var_value = f'input({true.strip()} if {conditional.strip()} else {false.strip()})'
+                        else:
+                            var_value = 'input'+var_value[16:]
                     tokens.append(name[1])
                     variables.append(var_type.upper())
                     tokens.append(var_value.strip())
@@ -423,13 +479,13 @@ def syphon_tokenizer(filepath):
                     variables.append(name[1][:-1])
                     variables.append(var_type.upper())
                     
-            elif '} ' in line or '}\n' in line:
+            elif ('} ' in line and not 'console.print' in line) or '}\n' in line:
                 line = line.strip()
                 tokens.append("END")
                     
-            elif line == "\n":
+            elif line == '\n' or len(line.split()) == 0:
                 tokens.append('\n')
-                # Whitespace
+                # Whitespace / Blank lines
                 
             elif line == '++':
                 pass
@@ -441,6 +497,21 @@ def syphon_tokenizer(filepath):
                 except:
                     raise SyntaxError("Missing Parentheses around return value")
                 tokens.append('RETURN:')
+                if '<' in output and '>' in output:
+                    tokens.append('TERNARY:')
+                    output = output[output.index('<')+1:output.index('>')]
+                    conditional, true, false = output.split(';')
+                    if 'console.println' in true:
+                        true = 'print'+true[true.index('println')+7:]
+                    elif 'console.print' in true:
+                        true = 'print'+true.strip()[true.index('print')+5:-1]+', end=\'\')'
+                    if 'console.println' in false:
+                        false = 'print'+false[false.index('println')+7:]
+                    elif 'console.print' in false:
+                        false = 'print'+false.strip()[false.index('print')+5:-1]+', end=\'\')'
+                    if conditional[0] == '&':
+                        conditional = conditional[1:].upper()
+                    output = conditional.strip()+';'+true.strip()+';'+false.strip()
                 if 'console.readline' in output:
                     tokens.append('INPUT:')
                     output = output[output.index('(') + 1:-1]
@@ -454,27 +525,59 @@ def syphon_tokenizer(filepath):
                 line = line.strip()
                 tokens.append('INPUT:')
                 func_input = line[index + 11:-1]
-                tokens.append(func_input)
+                if '<' in func_input and '>' in func_input:
+                    conditional, true, false = func_input[1:-1].split(';')
+                    tokens.append(f'{true} if {conditional} else {false}')
+                else:
+                    tokens.append(func_input)
                 
-            elif 'console.println' in line:
+            elif 'console.println' in line and (not line.strip()[-1] == '>' or not line.strip()[0] == '<'):
                 line = line.strip()
                 tokens.append('PRINTLN:')
                 func_input = line[line.index('print') + 8:-1]
-                func_input = func_input.split(' ')
-                if func_input[0][0] == '&':
-                    func_input[0] = func_input[0][1:].upper()
-                func_input = ' '.join(func_input)
-                tokens.append(func_input)
+                if '<' in line.strip() and '>' in line.strip():
+                    ternary_stuff = func_input[1:-1]
+                    conditional, true, false = ternary_stuff.split(';')
+                    if conditional[0] == '&':
+                        if '==' in conditional:
+                            variable, value = conditional.split('==')
+                            variable = variable[1:].upper()
+                            conditional = f'{variable} == {value}'
+                    tokens.append('TERNARY:')
+                    tokens.append(conditional.strip())
+                    tokens.append(true.strip())
+                    tokens.append(false.strip())
+                else:
+                    func_input = func_input.split(' ')
+                    if func_input != ['']:
+                        if func_input[0][0] == '&':
+                            func_input[0] = func_input[0][1:].upper()
+                        func_input = ' '.join(func_input)
+                        tokens.append(func_input)
+                    else:
+                        tokens.append('""')
                 
-            elif 'console.print' in line:
+            elif 'console.print' in line and (not line.strip()[-1] == '>' or not line.strip()[0] == '<'):
                 line = line.strip()
                 tokens.append('PRINT:')
                 func_input = line[line.index('print') + 6:-1]
+                if '<' in line.strip() and '>' in line.strip():
+                    ternary_stuff = func_input[1:-1]
+                    conditional, true, false = ternary_stuff.split(';')
+                    if conditional[0] == '&':
+                        conditional = conditional[1:].upper()
+                    tokens.append('TERNARY:')
+                    tokens.append(conditional.strip())
+                    tokens.append(true.strip())
+                    tokens.append(false.strip())
                 func_input = func_input.split(' ')
-                if func_input[0][0] == '&':
-                    func_input[0] = func_input[0][1:].upper()
-                func_input = ' '.join(func_input)
-                tokens.append(func_input)
+                if func_input != ['']:
+                    if func_input[0][0] == '&':
+                        func_input[0] = func_input[0][1:].upper()
+                    func_input = ' '.join(func_input)
+                    tokens.append(func_input)
+                else:
+                    tokens.append('""')
                     
             elif '//' in line:
                 tokens.append('COMMENT:')
@@ -486,9 +589,28 @@ def syphon_tokenizer(filepath):
             elif '*/' in line:
                 tokens.append('MULTI-LINE END')
                 
-            elif '.append' in line:
-                tokens.append('APPEND:')
+            elif '.append(' in line or '.clear(' in line or '.copy(' in line or '.count(' in line or '.extend(' in line or '.index(' in line or '.insert(' in line or '.pop(' in line or '.remove(' in line or '.reverse(' in line or '.sort(' in line:
+                tokens.append('LIST METHOD:')
                 tokens.append(line.strip())
+                # lmao gonna have to fix this in the future too lazy rn ngl
+                
+            elif '<' in line:
+                tokens.append('TERNARY:')
+                line = line[line.index('<')+1:line.index('>')]
+                conditional, true, false = line.split(';')
+                if 'console.println' in true:
+                    true = 'print'+true[true.index('println')+7:]
+                elif 'console.print' in true:
+                    true = 'print'+true.strip()[true.index('print')+5:-1]+', end=\'\')'
+                if 'console.println' in false:
+                    false = 'print'+false[false.index('println')+7:]
+                elif 'console.print' in false:
+                    false = 'print'+false.strip()[false.index('print')+5:-1]+', end=\'\')'
+                if conditional[0] == '&':
+                    conditional = conditional[1:].upper()
+                tokens.append(conditional.strip())
+                tokens.append(true.strip())
+                tokens.append(false.strip())
                     
             # When adding more stuff add it above this;
             # These are the blackhole statements vvv
