@@ -23,6 +23,6 @@ if NOT "%~2"=="-c" (
 )
 
 if "%~2"=="-d" (
-    REM Delete newly generated Python file (deletes after running script)
+    REM Delete newly generated Python file
     del "%~dpn1.py"
 )
