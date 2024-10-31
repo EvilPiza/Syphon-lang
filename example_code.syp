@@ -31,7 +31,8 @@ foreach (int incrementor; range(user_input)) {
         }
     }
     foreach (int num; row) {
-        console.println(num, end='\n' if num == row[-1] else '\t')
+        console.print(num)
+        console.print(<num == row[-1]; end='\n'; '\t'>)
     }
 }
 
