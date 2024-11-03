@@ -11,7 +11,7 @@
 - Optional static typing (You can use the `any` type to bypass)
 - `match-find` statements! (this is cool because i am *forced* to use an older version of python)
 
-## Confirmed Coming Soon
+## Coming Soon
 
 - Ternary operator, most of it is out but still kinda buggy
 - Full rewrite (code too ugly)
