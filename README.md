@@ -6,9 +6,10 @@
 
 - Conditionals (`if`, `elif`, and `else`)
 - Loops (`for`, `foreach`, and `while`)
-- Variable declarations (mutable and immutable)
+- Variable immutability
 - Basic arithmetic operations (`+`, `-`, `*`, `/`, `++;`, `--;`, `+=`, `-=`, `*=`, `/=`)
 - Optional static typing (You can use the `any` type to bypass)
+- `match-find` statements! (this is cool because i am *forced* to use an older version of python)
 
 ## Confirmed Coming Soon
 
