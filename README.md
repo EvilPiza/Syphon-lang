@@ -16,10 +16,6 @@
 - Ternary operator, most of it is out but still kinda buggy
 - Full rewrite (code too ugly)
 
-## Confirmed Never Coming Soon
-
-- Classes, functional programming is way better.
-
 ## How to work bat file (for dummies)
 
 - Just run the `.bat` file with the parameter of your Syphon file!
