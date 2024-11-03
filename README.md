@@ -22,7 +22,7 @@
 ## How to work bat file (for dummies)
 
 - Just run the `.bat` file with the parameter of your Syphon file!
-- To only *Compile* Syphon and not run it just add `-c` to the end!!
+- To only *Compile* Syphon and not run it just add `-c` to the end!! (this wont go through any error checker btw!)
 - To delete the Python file after it runs add the `-d` parameter!!
 
 ## Official Syphon Logo!!
