@@ -12,7 +12,7 @@
 
 ## Confirmed Coming Soon
 
-- Ternary operator (expect this in a few days)
+- Ternary operator, most of it is out but still kinda buggy
 - Full rewrite (code too ugly)
 
 ## Confirmed Never Coming Soon
