@@ -1,6 +1,6 @@
 # Syphon
 
-*Syphon Your Time Out The Window*.
+*Syphon Your Time Out The Window.*
 
 ## Features (So Far)
 
@@ -9,12 +9,11 @@
 - Variable immutability
 - Basic arithmetic operations (`+`, `-`, `*`, `/`, `++;`, `--;`, `+=`, `-=`, `*=`, `/=`)
 - Optional static typing (You can use the `any` type to bypass)
-- `match-find` statements! (this is cool because i am *forced* to use an older version of python)
+- `match-find` statements! basically `match-case` but weird!!
 
 ## Coming Soon
 
-- Ternary operator, most of it is out but still kinda buggy
-- Full rewrite (code too ugly)
+- Full rewrite (code too ugly) (i really don't want to do this)
 
 ## How to work bat file (for dummies)
 
