@@ -47,8 +47,11 @@ def variable_operation(list1, text):
                 return ["Decrement Operator", name, decrementor]
             if text[0].strip() == '}':
                 return ["End of file", i]
-            if i == text[0] or i == text[1]:
-                return ["Variable Reassignment", i]
+            try:
+                if i == text[0] or i == text[1]:
+                    return ["Variable Reassignment", i]
+            except:
+                raise SyntaxError('You probably misspelled something!')
     return ["Unknown Error"]
                 
 def syphon_interpreter(filename, tokens):
@@ -67,7 +70,7 @@ def syphon_interpreter(filename, tokens):
                         default_value = "NONE"
                         for i in tokens[func + 2]:
                             if '=' in i:
-                                default_value = i[i.index('=') + 1]
+                                default_value = i.split(' ')[i.split(' ').index('=') + 1]
                         if default_value != "NONE":
                             file.write(f'{param[1]}: {param[0]} = {default_value}')
                         else:
@@ -193,7 +196,7 @@ def syphon_interpreter(filename, tokens):
                     elif tokens[var + 1] == "bool":
                         file.write('\t'*indents+f"{tokens[var + 3]} = bool(input{tokens[var + 4][5:]})\n")
                     elif tokens[var + 1] == "array":
-                        file.write('\t'*indents+f"{tokens[var + 3]} = input({tokens[var + 4]}).split(' ')")
+                        file.write('\t'*indents+f"{tokens[var + 3]} = {tokens[var + 4]}.split(' ')")
                 else:
                     file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
             if token == "END":
@@ -268,7 +271,7 @@ def syphon_interpreter(filename, tokens):
                 current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
             if token == "TERNARY:" and (tokens[index - 1] != 'PRINTLN:' and tokens[index - 1] != 'PRINT:') and tokens[index - 1] != 'RETURN:':
-                file.write('\t'*indents+tokens[index + 2]+' if '+tokens[index + 1]+' else '+tokens[index + 3]+'\n')
+                file.write('\t'*indents+tokens[index + 2]+' if '+tokens[index + 1]+' else '+tokens[index + 3]+'\n')    
     file.close()
 
 def syphon_tokenizer(filepath):
@@ -298,6 +301,9 @@ def syphon_tokenizer(filepath):
                 tokens.append(func_name)
                 if func_params.split() != ['()']:
                     for i in func_params[1:-1].split(','):
+                        if '=' in i:
+                            type_and_var, def_value = i.split('=')
+                            i = type_and_var.strip()
                         type_, var = i.split(' ')
                         variables.append(var)
                         variables.append(type_)
@@ -358,16 +364,17 @@ def syphon_tokenizer(filepath):
                 index = ''
                 for idx, part in enumerate(conditional[1:-1].split('=')):
                     part = part.strip()
-                    if part[-1] in comparator_list:
+                    if part.split() in comparator_list:
                         index = comparator_list[comparator_list.index(part[-1])]
                         part = part[:-1]
                         part = part.strip()
-                    if part[0] == '&':
+                    if part.split() == '&':
                         part = part[1:].upper()
                     if not part == conditional[1:-1].split('=')[-1].strip():
                         part = part+' '
                     conditional_list.append(part)
-                conditional_list.insert(2, index+'= ')
+                if conditional_list[-1] != 'True' and conditional_list[-1] != 'False':
+                    conditional_list.insert(2, index+'==')
                 conditional_list.append(f'{conditional_list[-1].strip()})')
                 conditional_list.pop(-2)
                 conditional_list = ''.join(conditional_list)
@@ -730,7 +737,7 @@ def syphon_tokenizer(filepath):
                         
         file.close()
         #print(variables)
-        print(tokens)
+        #print(tokens)
         syphon_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
