@@ -14,8 +14,8 @@ if not exist "%input_file%" (
     exit /b 1
 )
 
-REM Translates Syphon
-python Syphon.py "%input_file%"
+REM Translates Syptonic
+python Syptonic.py "%input_file%"
 
 if NOT "%~2"=="-c" (
     REM Run the generated Python file
