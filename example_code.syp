@@ -19,7 +19,7 @@ for incrementor in range(user_input):
 
 
 ################################################
-# Multiplication Table written in EPIC Syphon
+# Multiplication Table written in EPIC Syptonic
 ################################################
 
 int user_input = console.readline('How many columns/rows?\n> ')
@@ -42,5 +42,5 @@ foreach (int incrementor; range(user_input)) {
 ############
 # Notes vvv
 ############
-- I'm using hashtags but comments in Syphon are '//' or '/* + */' for a multi-line
-- The Syphon code was written by me, the Python was written by Syphon
+- I'm using hashtags but comments in Syptonic are '//' or '/* + */' for a multi-line
+- The Syptonic code was written by me, the Python was written by Syptonic
