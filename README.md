@@ -1,6 +1,6 @@
-# Syphon
+# Syptonic
 
-*Syphon Your Time Out The Window.*
+*Something, something, something, Syptonic.*
 
 ## Features (So Far)
 
@@ -17,10 +17,10 @@
 
 ## How to work bat file (for dummies)
 
-- Just run the `.bat` file with the parameter of your Syphon file!
-- To only *Compile* Syphon and not run it just add `-c` to the end!! (this wont go through any error checker btw!)
+- Just run the `.bat` file with the parameter of your Syptonic file!
+- To only *Compile* Syptonic and not run it just add `-c` to the end!! (this wont go through any error checker btw!)
 - To delete the Python file after it runs add the `-d` parameter!!
 
-## Official Syphon Logo!!
+## Official Syptonic Logo!!
   
-![SyphonLogo](https://github.com/user-attachments/assets/a117d966-664e-4ab2-958c-7a96a25edd5b)
+![SyptonicLogo](https://github.com/user-attachments/assets/a117d966-664e-4ab2-958c-7a96a25edd5b)
