@@ -54,7 +54,7 @@ def variable_operation(list1, text):
                 raise SyntaxError('You probably misspelled something!')
     return ["Unknown Error"]
                 
-def syphon_interpreter(filename, tokens):
+def syptonic_interpreter(filename, tokens):
     with open(filename + '.py', 'w') as file:
         indents = 0
         for index, token in enumerate(tokens):
@@ -271,12 +271,12 @@ def syphon_interpreter(filename, tokens):
                 current_line = index
                 file.write('\t'*indents+tokens[current_line + 1]+" /= "+tokens[current_line + 2]+"\n")
             if token == "TERNARY:" and (tokens[index - 1] != 'PRINTLN:' and tokens[index - 1] != 'PRINT:') and tokens[index - 1] != 'RETURN:':
-                file.write('\t'*indents+tokens[index + 2]+' if '+tokens[index + 1]+' else '+tokens[index + 3]+'\n')    
+                file.write('\t'*indents+tokens[index + 2]+' if '+tokens[index + 1]+' else '+tokens[index + 3]+'\n')
     file.close()
 
-def syphon_tokenizer(filepath):
+def syptonic_tokenizer(filepath):
     if not filepath[-4:] == '.syp':
-        raise NameError("File Extension is incorrect, Syphon uses '.syp'")
+        raise NameError("File Extension is incorrect, Syptonic uses '.syp'")
     with open(filepath, "r") as file:
         variables = []
         supported_variable_types = ['int ', 'str ', 'float ', 'bool ', 'array ', 'any ']
@@ -293,7 +293,7 @@ def syphon_tokenizer(filepath):
                 try:
                     func_type, func_name = line[line.index('fn ') + 3:line.index('(')].strip().split(' ')
                 except:
-                    raise SyntaxError("Function Syntax in Syphon is 'fn [return type] [function name] ([parameters]) {[logic]}'")
+                    raise SyntaxError("Function Syntax in Syptonic is 'fn [return type] [function name] ([parameters]) {[logic]}'")
                 invalid_name(func_name, 'Function')
                 func_params = line[line.index('('):line.index('{')].strip()
                 invalid_name(func_params, 'Function Parameters')
@@ -348,7 +348,6 @@ def syphon_tokenizer(filepath):
             elif 'foreach (' in line:
                 tokens.append('FOREACH LOOP:')
                 stuff = line[line.index('foreach (')+8:line.index('{')].strip()
-                # print(stuff[1:-1].split('; '))
                 var, iterable = stuff[1:-1].split('; ')
                 tokens.append(var.split(' ')[0])
                 tokens.append(var.split(' ')[1])
@@ -373,7 +372,7 @@ def syphon_tokenizer(filepath):
                     if not part == conditional[1:-1].split('=')[-1].strip():
                         part = part+' '
                     conditional_list.append(part)
-                if conditional_list[-1] != 'True' and conditional_list[-1] != 'False':
+                if conditional_list[-1] != 'True' and conditional_list[-1] != 'False' and len(conditional_list) >= 3:
                     conditional_list.insert(2, index+'==')
                 conditional_list.append(f'{conditional_list[-1].strip()})')
                 conditional_list.pop(-2)
@@ -486,9 +485,44 @@ def syphon_tokenizer(filepath):
                     variables.append(name[1][:-1])
                     variables.append(var_type.upper())
                     
-            elif ('} ' in line and not 'console.print' in line) or '}\n' in line:
+            elif ('} ' in line and not 'console.print' in line) or '}\n' in line or line == '}':
                 line = line.strip()
-                tokens.append("END")
+                already_appended_end = False
+                for iterator, trash in enumerate(tokens):
+                    token = tokens[-1]
+                    previous_token = tokens[-1 - iterator]
+                    if previous_token == 'FOREACH LOOP:':
+                        tokens.append('FOREACH END')
+                        already_appended_end = True
+                        break
+                    
+                    elif previous_token == 'FOR LOOP:':
+                        tokens.append('FOR END')
+                        already_appended_end = True
+                        break
+
+                    elif previous_token == 'IF STATEMENT:':
+                        tokens.append('IF STATEMENT END')
+                        already_appended_end = True
+                        break
+                    
+                    elif previous_token == 'FUNCTION:':
+                        tokens.append('FUNCTION END')
+                        already_appended_end = True
+                        break
+                    
+                    elif previous_token == 'WHILE LOOP:':
+                        tokens.append('WHILE END')
+                        already_appended_end = True
+                        break
+                    
+                    elif previous_token == 'MATCH:':
+                        tokens.append('MATCH-FIND END')
+                        already_appended_end = True
+                        break
+                    
+                if not already_appended_end:    
+                    tokens.append("END")
                     
             elif line == '\n' or len(line.split()) == 0:
                 tokens.append('\n')
@@ -738,6 +772,6 @@ def syphon_tokenizer(filepath):
         file.close()
         #print(variables)
         #print(tokens)
-        syphon_interpreter(filepath[:-4], tokens)
+        syptonic_interpreter(filepath[:-4], tokens)
 
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
