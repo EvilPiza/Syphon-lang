@@ -11,8 +11,6 @@ for incrementor in range(user_input):
 			row.append(stuff + incrementor)
 		else:
 			row.append(row[-1] + incrementor)
-
-
 	for num in row:
 		print(num, end="")
 		print(end='\n' if num == row[-1] else '\t')
