@@ -13,6 +13,7 @@
 
 ## Coming Soon
 
+- Greater than or equal to and less than or equal to
 - Full rewrite (code too ugly) (i really don't want to do this)
 
 ## How to work bat file (for dummies)
