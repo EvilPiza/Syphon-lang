@@ -146,7 +146,7 @@ def syptonic_interpreter(filename, tokens):
             if token == "ELIF STATEMENT:":
                 file.write('\t'*(indents-1)+f'\nelif {tokens[index + 1]}:\n')
             if token == "ELSE STATEMENT:":
-                file.write('\t'*(indents-1)+'\nelse:\n')
+                file.write('\t'*(indents-1)+'else:\n')
             if token == "VARIABLE:":
                 var = index
                 if tokens[var + 4][0] == '&':
