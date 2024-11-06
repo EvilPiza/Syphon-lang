@@ -129,22 +129,9 @@ def syptonic_interpreter(filename, tokens):
                 if conditional[1][4:8] == 'len(':
                     if conditional[1][8] == '&':
                         conditional[1] = conditional[1][:8]+conditional[1][9:-1].upper()+')'
-                if '++' in conditional[-1]:
-                    if conditional[-1][conditional[-1].index('++')+2:] == '':
-                        conditional[-1] = conditional[-1][:-2]+' += 1'
-                    elif conditional[-1][conditional[-1].index('++')+2:][-1] in '0123456789':
-                        conditional[-1] = conditional[-1][:conditional[-1].index('++')]+' += '+conditional[-1][conditional[-1].index('++')+2:]
-                        
-                elif '--' in conditional[-1]:
-                    if conditional[-1][conditional[-1].index('--')+2:] == '':
-                        conditional[-1] = conditional[-1][:-2]+' -= 1'
-                    elif conditional[-1][conditional[-1].index('--')+2:][-1] in '0123456789':
-                        conditional[-1] = conditional[-1][:conditional[-1].index('--')]+' -= '+conditional[-1][conditional[-1].index('--')+2:]
                         
                 file.write('\t'*(indents-1)+f'{var} = {default_value}\n')
                 file.write('\t'*(indents-1)+f'while {conditional[1]}:\n')
-
-                file.write('\t'*indents+f'{conditional[2]}\n')
             if token == "FOREACH LOOP:":
                 indents += 1
                 if tokens[index+3][0] == '&':
@@ -157,9 +144,9 @@ def syptonic_interpreter(filename, tokens):
                 indents += 1
                 file.write('\t'*(indents-1)+f'if {tokens[index+1]}:\n')
             if token == "ELIF STATEMENT:":
-                file.write('\t'*(indents-1)+f'elif {tokens[index + 1]}:\n')
+                file.write('\t'*(indents-1)+f'\nelif {tokens[index + 1]}:\n')
             if token == "ELSE STATEMENT:":
-                file.write('\t'*(indents-1)+'else:\n')
+                file.write('\t'*(indents-1)+'\nelse:\n')
             if token == "VARIABLE:":
                 var = index
                 if tokens[var + 4][0] == '&':
@@ -202,7 +189,30 @@ def syptonic_interpreter(filename, tokens):
             if token == "END":
                 indents -= 1
                 file.write('\n')
-                # For spacing purposes
+            if token == "IF STATEMENT END" or token == "":
+                indents -= 1
+                # We don't want another line, trust me bro
+            if token == "FOR END":
+                for_input = 0
+                for iterator in range(len(tokens)):
+                    if tokens[index - iterator] == 'FOR LOOP:':
+                        for_input = tokens[index - iterator + 1]
+                conditional = for_input
+                for i in range(len(conditional)):
+                    conditional[i] = conditional[i].strip()
+                if '++' in conditional[-1]:
+                    if conditional[-1][conditional[-1].index('++')+2:] == '':
+                        conditional[-1] = conditional[-1][:-2]+' += 1'
+                    elif conditional[-1][conditional[-1].index('++')+2:][-1] in '0123456789':
+                        conditional[-1] = conditional[-1][:conditional[-1].index('++')]+' += '+conditional[-1][conditional[-1].index('++')+2:]
+                        
+                elif '--' in conditional[-1]:
+                    if conditional[-1][conditional[-1].index('--')+2:] == '':
+                        conditional[-1] = conditional[-1][:-2]+' -= 1'
+                    elif conditional[-1][conditional[-1].index('--')+2:][-1] in '0123456789':
+                        conditional[-1] = conditional[-1][:conditional[-1].index('--')]+' -= '+conditional[-1][conditional[-1].index('--')+2:]
+                file.write(('\t'*indents)+conditional[-1])
+                    
             if token == 'RETURN:' and indents > 0:
                 if tokens[index + 1] == 'INPUT:':
                     file.write('\t'*indents+f'return (input({tokens[index + 2]}))\n')
