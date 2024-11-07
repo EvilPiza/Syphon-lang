@@ -14,7 +14,7 @@ if not exist "%input_file%" (
     exit /b 1
 )
 
-REM Translates Syptonic
+REM Translate Syptonic
 python Syptonic.py "%input_file%"
 
 if NOT "%~2"=="-c" (
