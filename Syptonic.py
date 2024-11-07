@@ -139,7 +139,7 @@ def syptonic_interpreter(filename, tokens):
                 file.write('\t'*(indents-1)+f"for {tokens[index+2]} in {tokens[index+3]}:\n")
             if token == "WHILE LOOP:":
                 indents += 1
-                file.write('\t'*(indents-1)+f'while {tokens[index+1][1:-1].strip()}:\n')
+                file.write('\t'*(indents-1)+f'while {tokens[index+1]}:\n')
             if token == "IF STATEMENT:":
                 indents += 1
                 file.write('\t'*(indents-1)+f'if {tokens[index+1]}:\n')
@@ -243,6 +243,16 @@ def syptonic_interpreter(filename, tokens):
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
                 file.write('\t'*indents+'_'+func_name+'_ = '+func_name+call_value+'\n')
+            if token == 'IMPORTS:':
+                if tokens[index+2] == 'IMPORT END':
+                    # if we are importing the whole package
+                    pack_name = tokens[index + 1]
+                    file.write('\t'*indents+'import '+pack_name)
+                else:
+                    # we are importing things *from* a package
+                    pack_name = tokens[index + 2]
+                    imports = tokens[index + 1]
+                    file.write('\t'*indents+'from '+pack_name+' import '+imports)
             if token == 'MATCH:':
                 match_variable = tokens[index + 1]
             if token == 'FIND:':
@@ -336,17 +346,6 @@ def syptonic_tokenizer(filepath):
                     statement = statement[1:].upper()
                 tokens.append(statement)
                 
-            elif 'if (' in line:
-                tokens.append('IF STATEMENT:')
-                if line[line.index('{') - 1] == ')':
-                    statement = line[line.index('if (') + 4:line.index('{') - 1]
-                else:
-                    statement = line[line.index('if (') + 4:line.index('{') - 2]
-                statement = statement.strip()
-                if statement[0] == "&":
-                    statement = statement[1:].upper()
-                tokens.append(statement)
-                
             elif '} else {' in line:
                 tokens.append('ELSE STATEMENT:')
                     
@@ -365,30 +364,37 @@ def syptonic_tokenizer(filepath):
                 variables.append(var.split(' ')[0])
                 tokens.append(iterable)
             
-            elif 'while (' in line:
-                tokens.append('WHILE LOOP:')
-                conditional = line[line.index('while (')+6:line.index('{')].strip()
-                comparator_list = ['=', '!']
-                conditional_list = ['(']
-                index = ''
-                for idx, part in enumerate(conditional[1:-1].split('=')):
-                    part = part.strip()
-                    if part.split() in comparator_list:
-                        index = comparator_list[comparator_list.index(part[-1])]
-                        part = part[:-1]
-                        part = part.strip()
-                    if part.split() == '&':
-                        part = part[1:].upper()
-                    if not part == conditional[1:-1].split('=')[-1].strip():
-                        part = part+' '
-                    conditional_list.append(part)
-                if conditional_list[-1] != 'True' and conditional_list[-1] != 'False' and len(conditional_list) >= 3:
-                    conditional_list.insert(2, index+'==')
-                conditional_list.append(f'{conditional_list[-1].strip()})')
-                conditional_list.pop(-2)
-                conditional_list = ''.join(conditional_list)
-                tokens.append(conditional_list)
-                    
+            elif 'while (' in line or 'if (' in line:
+                if 'while (' in line:
+                    tokens.append('WHILE LOOP:')
+                    if line[line.index('{') - 1] == ')':
+                        statement = line[line.index('while (') + 7:line.index('{') - 1]
+                    else:
+                        statement = line[line.index('while (') + 7:line.index('{') - 2]
+                    statement = statement.strip()
+                elif 'if (' in line:
+                    tokens.append('IF STATEMENT:')
+                    if line[line.index('{') - 1] == ')':
+                        statement = line[line.index('if (') + 4:line.index('{') - 1]
+                    else:
+                        statement = line[line.index('if (') + 4:line.index('{') - 2]
+                    statement = statement.strip()
+                    if statement[0] == "&":
+                        statement = statement[1:].upper()
+                statement = statement.split(' ')
+                for number, word in enumerate(statement):
+                    if word == '>>' or word == '<<':
+                        statement[number] = word[:-1]+'='
+                    elif word == '&&':
+                        statement[number] = 'and'
+                    elif word == '||':
+                        statement[number] = 'or'
+                        
+                statement = ' '.join(statement)
+                if ')' in statement and '(' in statement:
+                    statement = f'({statement})'
+                tokens.append(statement)
+                        
             elif 'call' in line:
                 func_name = line[line.index('call ') + 4:line.index('(')].strip()
                 invalid_name(func_name, 'Function Call (Unknown Function Name)')
@@ -406,6 +412,16 @@ def syptonic_tokenizer(filepath):
                 else:
                     raise NameError(f'Function \'{func_name}\' is undefined!')
                 variables.append(func_type)
+                
+            elif 'include' in line:
+                tokens.append('IMPORTS:')
+                package_name = line[line.index('include ') + 7:line.index(';')].strip()
+                if ':' in package_name:
+                    # We are using 'from'
+                    package_name, imports = package_name.split(':')
+                    tokens.append(imports.strip())
+                tokens.append(package_name.strip())
+                tokens.append('IMPORT END')
                 
             elif 'match (' in line.strip() or 'match(' in line.strip():
                 match_variable = line[line.index('(')+1:line.index(')')]
@@ -783,5 +799,5 @@ def syptonic_tokenizer(filepath):
         #print(variables)
         #print(tokens)
         syptonic_interpreter(filepath[:-4], tokens)
-
+        
 syphon_tokenizer(str(sys.argv[1:])[2:-2])
