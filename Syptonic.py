@@ -192,6 +192,8 @@ def syptonic_interpreter(filename, tokens):
             if token == "IF STATEMENT END" or token == "":
                 indents -= 1
                 # We don't want another line, trust me bro
+            if token == "IMPORT END":
+                file.write('\n')
             if token == "FOR END":
                 for_input = 0
                 for iterator in range(len(tokens)):
@@ -799,5 +801,5 @@ def syptonic_tokenizer(filepath):
         #print(variables)
         #print(tokens)
         syptonic_interpreter(filepath[:-4], tokens)
-        
-syphon_tokenizer(str(sys.argv[1:])[2:-2])
+
+syptonic_tokenizer(str(sys.argv[1:])[2:-2])
