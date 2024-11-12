@@ -10,7 +10,7 @@ def is_this_variable_defined(list1, text):
     text = text.strip().split(" ")
     for item1 in list1:
         if item1[:-1] == text[0]:
-            return [item1[:-1], "YES"]
+            return [item1[:-1], f"YES"]
         elif item1[:-1]+"&" == text[0]:
             return [item1[:-1], "IMMUTABLE"]
         elif item1[:-1]+'[]' == text[0]:
@@ -60,48 +60,26 @@ def syptonic_interpreter(filename, tokens):
         for index, token in enumerate(tokens):
             if token == "FUNCTION:":
                 indents += 1
-                func = tokens.index('FUNCTION:')
-                tokens[func + 2] = tokens[func + 2][1:-1]
-                file.write(f'def {tokens[func + 1]}(')
-                tokens[func + 2] = tokens[func + 2].split(',')
-                if tokens[func + 2][0] == tokens[func + 2][-1] and tokens[func + 2][0] != 'NO PARAMS':
-                    param = str(tokens[func + 2])[2:-2].split(' ')
-                    if param != ['']:
-                        default_value = "NONE"
-                        for i in tokens[func + 2]:
-                            if '=' in i:
-                                default_value = i.split(' ')[i.split(' ').index('=') + 1]
-                        if default_value != "NONE":
-                            file.write(f'{param[1]}: {param[0]} = {default_value}')
-                        else:
-                            file.write(f'{param[1]}: {param[0]}')
-                elif tokens[func + 2][0] == 'NO PARAMS':
-                    pass
-                    # No parameters, no write
+                tokens[index + 2] = tokens[index + 2][1:-1]
+                file.write(f'def {tokens[index + 1]}(')
+                params = []
+                if ',' in tokens[index + 2]:
+                    tokens[index + 2] = tokens[index + 2].split(',')
+                    for i in tokens[index + 2]:
+                        tokens[index + 2][tokens[index + 2].index(i)] = tokens[index + 2][tokens[index + 2].index(i)].strip()
+                    for stuff in tokens[index + 2]:
+                        try:
+                            type_, var = stuff.split(' ')
+                            params.append(f'{var}: {type_}')
+                        except:
+                            pass
                 else:
-                    for i in tokens[func + 2]:
-                        i = i.split(' ')
-                        if i[0] == '':
-                            i = i[1:]
-                        if i == tokens[func + 2][-1].split(' ')[1:]:
-                            if '=' in i:
-                                default_value = i[i.index('=') + 1]
-                                file.write(f'{i[1]}: {i[i.index(i[1]) - 1]} = {default_value}')
-                            else:
-                                file.write(f'{i[1]}: {i[i.index(i[1]) - 1]}')
-                        else:
-                            if '=' in i:
-                                try:
-                                    defualt_value = i[i.index('=') + 1]
-                                    file.write(f'{i[1]}: {i[i.index(i[1]) - 1]} = {defualt_value}, ')
-                                except:
-                                    raise SyntaxError("Missing/Unknown Parameter Type")
-                            else:
-                                try:
-                                    file.write(f'{i[1]}: {i[i.index(i[1]) - 1]}, ')
-                                except:
-                                    raise SyntaxError("Missing/Unknown Parameter Type")
-                file.write(f') -> {tokens[func + 3]}:\n')
+                    type_, var = tokens[index + 2].split(' ')
+                    params.append(f'{var}: {type_}')
+                file.write(', '.join(params))
+                
+                
+                file.write(f') -> {tokens[index + 3]}:\n')
             if token == "FOR LOOP:":
                 indents += 1
                 tokens[index + 1] = tokens[index + 1][1:-1].split(';')
@@ -144,9 +122,9 @@ def syptonic_interpreter(filename, tokens):
                 indents += 1
                 file.write('\t'*(indents-1)+f'if {tokens[index+1]}:\n')
             if token == "ELIF STATEMENT:":
-                file.write('\t'*(indents-1)+f'\nelif {tokens[index + 1]}:\n')
+                file.write('\n'+'\t'*(indents-1)+f'elif {tokens[index + 1]}:\n')
             if token == "ELSE STATEMENT:":
-                file.write('\t'*(indents-1)+'else:\n')
+                file.write('\n'+'\t'*(indents-1)+'else:\n')
             if token == "VARIABLE:":
                 var = index
                 if tokens[var + 4][0] == '&':
@@ -186,12 +164,11 @@ def syptonic_interpreter(filename, tokens):
                         file.write('\t'*indents+f"{tokens[var + 3]} = {tokens[var + 4]}.split(' ')")
                 else:
                     file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
-            if token == "END":
+            if token == "END" or token == "IF STATEMENT END" or token == "FUNCTION END":
                 indents -= 1
                 file.write('\n')
-            if token == "IF STATEMENT END" or token == "":
-                indents -= 1
-                # We don't want another line, trust me bro
+            if token == "":
+                pass
             if token == "IMPORT END":
                 file.write('\n')
             if token == "FOR END":
@@ -215,14 +192,14 @@ def syptonic_interpreter(filename, tokens):
                         conditional[-1] = conditional[-1][:conditional[-1].index('--')]+' -= '+conditional[-1][conditional[-1].index('--')+2:]
                 file.write(('\t'*indents)+conditional[-1])
                     
-            if token == 'RETURN:' and indents > 0:
+            if token == 'RETURN:':
                 if tokens[index + 1] == 'INPUT:':
-                    file.write('\t'*indents+f'return (input({tokens[index + 2]}))\n')
+                    file.write('\t'*indents+f'return (input({tokens[index + 2]}))')
                 elif tokens[index + 1] == 'TERNARY:':
                     conditional, true, false = tokens[index + 2].split(';')
                     file.write('\t'*indents+f'return ({true} if {conditional} else {false})')
                 else:
-                    file.write('\t'*indents+'return '+tokens[index + 1]+'\n')
+                    file.write('\t'*indents+'return '+tokens[index + 1])
             if token == 'INPUT:' and tokens[index - 1] != 'RETURN:':
                 file.write('\t'*indents+f'input({tokens[index + 1]})\n')
             if token == 'LIST METHOD:':
@@ -245,6 +222,12 @@ def syptonic_interpreter(filename, tokens):
                 if call_value[1] == "&":
                     call_value = f"({call_value[2:-1].upper()})"
                 file.write('\t'*indents+'_'+func_name+'_ = '+func_name+call_value+'\n')
+            if token == 'FUNCTION CALLR:':
+                file.write('\t'*indents+tokens[index+1]+tokens[index+2]+'\n')
+            if token == 'BREAK STATEMENT':
+                file.write('\t'*indents+'break\n')
+            if token == 'CONTINUE STATEMENT':
+                file.write('\t'*indents+'continue\n')
             if token == 'IMPORTS:':
                 if tokens[index+2] == 'IMPORT END':
                     # if we are importing the whole package
@@ -270,8 +253,6 @@ def syptonic_interpreter(filename, tokens):
                 file.write('\t'*indents+"#"+comment)
             if token == 'MULTI-LINE COMMENT:' or token == 'MULTI-LINE END':
                 file.write('"""\n')
-            # "Oh why have 2 types of token that do the same thing??" -You probably
-            # DEBUGGING PURPOSEESEFEJFOIWJEF OWIEJFOIWJE OIJWFJ
             if token == "VAR REASSIGNMENT:":
                 file.write('\t'*indents+tokens[index + 1]+" = "+tokens[index + 2]+'\n')
             if token == "INCREMENT OPERATOR:":
@@ -326,6 +307,7 @@ def syptonic_tokenizer(filepath):
                         if '=' in i:
                             type_and_var, def_value = i.split('=')
                             i = type_and_var.strip()
+                        i = i.strip()
                         type_, var = i.split(' ')
                         variables.append(var)
                         variables.append(type_)
@@ -396,6 +378,22 @@ def syptonic_tokenizer(filepath):
                 if ')' in statement and '(' in statement:
                     statement = f'({statement})'
                 tokens.append(statement)
+            
+            elif 'callr' in line:
+                func_name = line[line.index('callr ') + 5:line.index('(')].strip()
+                invalid_name(func_name, 'Function Call (Unknown Function Name)')
+                func_params = line[line.index('('):line.index(')') + 1].strip()
+                tokens.append("FUNCTION CALLR:")
+                tokens.append(func_name)
+                tokens.append(func_params)
+                func_name_is_defined = False
+                for indx, tkns in enumerate(tokens):
+                    if tkns == 'FUNCTION:' and tokens[indx + 1] == func_name:
+                        func_name_is_defined = True
+                if func_name_is_defined or func_name in variables:
+                    variables.append(func_name)
+                else:
+                    raise NameError(f'Function \'{func_name}\' is undefined!')
                         
             elif 'call' in line:
                 func_name = line[line.index('call ') + 4:line.index('(')].strip()
@@ -411,9 +409,11 @@ def syptonic_tokenizer(filepath):
                         func_name_is_defined = True
                 if func_name_is_defined:
                     variables.append(func_name)
+                    tokens.append(func_type)
+                elif func_name in variables:
+                    pass
                 else:
                     raise NameError(f'Function \'{func_name}\' is undefined!')
-                variables.append(func_type)
                 
             elif 'include' in line:
                 tokens.append('IMPORTS:')
@@ -422,8 +422,23 @@ def syptonic_tokenizer(filepath):
                     # We are using 'from'
                     package_name, imports = package_name.split(':')
                     tokens.append(imports.strip())
+                    imports = imports.split(',')
+                    for i in imports:
+                        i = i.strip()
+                        imports.pop(0)
+                        imports.append(i)
+                    for i in imports:
+                        variables.append(i)
+                else:
+                    variables.append(package_name)
                 tokens.append(package_name.strip())
                 tokens.append('IMPORT END')
+                
+            elif 'break;' in line:
+                tokens.append('BREAK STATEMENT')
+                
+            elif 'continue;' in line:
+                tokens.append('CONTINUE STATEMENT')
                 
             elif 'match (' in line.strip() or 'match(' in line.strip():
                 match_variable = line[line.index('(')+1:line.index(')')]
@@ -481,7 +496,7 @@ def syptonic_tokenizer(filepath):
                             
                         elif var_type == "any":
                             pass
-                            # Anything can be anything
+                            # Anything can be anything; static typing bypass
                             
                     tokens.append(var_type.upper())
                     if name[0][-1] == "&":
@@ -591,6 +606,7 @@ def syptonic_tokenizer(filepath):
                     if i in variables:
                         pass 
                     # SHOULD NOT RUN vvv
+                    # I made this comment a little bit ago and forgot why, imma leave it cuz funny
                 line = line.strip()
                 tokens.append('INPUT:')
                 func_input = line[index + 11:-1]
@@ -801,5 +817,5 @@ def syptonic_tokenizer(filepath):
         #print(variables)
         #print(tokens)
         syptonic_interpreter(filepath[:-4], tokens)
-
+        
 syptonic_tokenizer(str(sys.argv[1:])[2:-2])
