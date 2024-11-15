@@ -42,8 +42,8 @@ def variable_operation(list1, text):
                 return ["Increment Operator", name, incrementor]
             if '--' in text[0]:
                 name, decrementor = text[0].split('--')
-                if incrementor == ';':
-                    incrementor = '1;'
+                if decrementor == ';':
+                    decrementor = '1;'
                 return ["Decrement Operator", name, decrementor]
             if text[0].strip() == '}':
                 return ["End of file", i]
@@ -62,21 +62,22 @@ def syptonic_interpreter(filename, tokens):
                 indents += 1
                 tokens[index + 2] = tokens[index + 2][1:-1]
                 file.write(f'def {tokens[index + 1]}(')
-                params = []
-                if ',' in tokens[index + 2]:
-                    tokens[index + 2] = tokens[index + 2].split(',')
-                    for i in tokens[index + 2]:
-                        tokens[index + 2][tokens[index + 2].index(i)] = tokens[index + 2][tokens[index + 2].index(i)].strip()
-                    for stuff in tokens[index + 2]:
-                        try:
-                            type_, var = stuff.split(' ')
-                            params.append(f'{var}: {type_}')
-                        except:
-                            pass
-                else:
-                    type_, var = tokens[index + 2].split(' ')
-                    params.append(f'{var}: {type_}')
-                file.write(', '.join(params))
+                if not tokens[index + 2] == 'NO PARAMS':
+                    params = []
+                    if ',' in tokens[index + 2]:
+                        tokens[index + 2] = tokens[index + 2].split(',')
+                        for i in tokens[index + 2]:
+                            tokens[index + 2][tokens[index + 2].index(i)] = tokens[index + 2][tokens[index + 2].index(i)].strip()
+                        for stuff in tokens[index + 2]:
+                            try:
+                                type_, var = stuff.split(' ')
+                                params.append(f'{var}: {type_}')
+                            except:
+                                pass
+                    else:
+                        type_, var = tokens[index + 2].split(' ')
+                        params.append(f'{var}: {type_}')
+                    file.write(', '.join(params))
                 
                 
                 file.write(f') -> {tokens[index + 3]}:\n')
@@ -122,9 +123,9 @@ def syptonic_interpreter(filename, tokens):
                 indents += 1
                 file.write('\t'*(indents-1)+f'if {tokens[index+1]}:\n')
             if token == "ELIF STATEMENT:":
-                file.write('\n'+'\t'*(indents-1)+f'elif {tokens[index + 1]}:\n')
+                file.write('\t'*(indents-1)+f'elif {tokens[index + 1]}:\n')
             if token == "ELSE STATEMENT:":
-                file.write('\n'+'\t'*(indents-1)+'else:\n')
+                file.write('\t'*(indents-1)+'else:\n')
             if token == "VARIABLE:":
                 var = index
                 if tokens[var + 4][0] == '&':
@@ -164,12 +165,14 @@ def syptonic_interpreter(filename, tokens):
                         file.write('\t'*indents+f"{tokens[var + 3]} = {tokens[var + 4]}.split(' ')")
                 else:
                     file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
-            if token == "END" or token == "IF STATEMENT END" or token == "FUNCTION END":
+            if token == "END" or token == "FIND END" or token == "WHILE END" or token == "FUNCTION END" or token == "FOREACH END":
                 indents -= 1
                 file.write('\n')
             if token == "":
                 pass
-            if token == "IMPORT END":
+            if token == "IF STATEMENT END":
+                indents -= 1
+            if token == "IMPORT END" or token == "MATCH END":
                 file.write('\n')
             if token == "FOR END":
                 for_input = 0
@@ -193,13 +196,15 @@ def syptonic_interpreter(filename, tokens):
                 file.write(('\t'*indents)+conditional[-1])
                     
             if token == 'RETURN:':
+                if "":
+                    pass
                 if tokens[index + 1] == 'INPUT:':
-                    file.write('\t'*indents+f'return (input({tokens[index + 2]}))')
+                    file.write('\t'*indents+f'return (input({tokens[index + 2]}))\n')
                 elif tokens[index + 1] == 'TERNARY:':
                     conditional, true, false = tokens[index + 2].split(';')
-                    file.write('\t'*indents+f'return ({true} if {conditional} else {false})')
+                    file.write('\t'*indents+f'return ({true} if {conditional} else {false})\n')
                 else:
-                    file.write('\t'*indents+'return '+tokens[index + 1])
+                    file.write('\t'*indents+'return '+tokens[index + 1]+'\n')
             if token == 'INPUT:' and tokens[index - 1] != 'RETURN:':
                 file.write('\t'*indents+f'input({tokens[index + 1]})\n')
             if token == 'LIST METHOD:':
@@ -243,11 +248,12 @@ def syptonic_interpreter(filename, tokens):
             if token == 'FIND:':
                 if tokens[index - 2] == 'MATCH:':
                     file.write('\t'*indents+f'if {match_variable} == {tokens[index + 1]}:\n')
-                    indents += 1
                 elif tokens[index + 1] == '_':
-                    file.write('\t'*(indents-1)+'else:\n')
+                    file.write('\t'*indents+'else:\n')
+                    
                 else:
-                    file.write('\t'*(indents-1)+f'elif {match_variable} == {tokens[index + 1]}:\n')
+                    file.write('\t'*indents+f'elif {match_variable} == {tokens[index + 1]}:\n')
+                indents += 1
             if token == 'COMMENT:':
                 comment = tokens[tokens.index(token)+1]
                 file.write('\t'*indents+"#"+comment)
@@ -282,6 +288,7 @@ def syptonic_tokenizer(filepath):
         raise NameError("File Extension is incorrect, Syptonic uses '.syp'")
     with open(filepath, "r") as file:
         variables = []
+        token_tracker = [['foreach', 0], ['for', 0], ['if', 0], ['func', 0], ['while', 0], ['match', 0], ['find', 0]]
         supported_variable_types = ['int ', 'str ', 'float ', 'bool ', 'array ', 'any ']
         tokens = []
         Function = False
@@ -293,6 +300,7 @@ def syptonic_tokenizer(filepath):
                 tokens.append(line[2:])
                 
             elif 'fn ' in line:
+                token_tracker[3][-1] += 1
                 try:
                     func_type, func_name = line[line.index('fn ') + 3:line.index('(')].strip().split(' ')
                 except:
@@ -334,11 +342,13 @@ def syptonic_tokenizer(filepath):
                 tokens.append('ELSE STATEMENT:')
                     
             elif 'for (' in line:
+                token_tracker[1][-1] += 1
                 tokens.append('FOR LOOP:')
                 conditional = line[line.index('for (')+4:line.index('{')].strip()
                 tokens.append(conditional)
             
             elif 'foreach (' in line:
+                token_tracker[0][-1] += 1
                 tokens.append('FOREACH LOOP:')
                 stuff = line[line.index('foreach (')+8:line.index('{')].strip()
                 var, iterable = stuff[1:-1].split('; ')
@@ -350,6 +360,7 @@ def syptonic_tokenizer(filepath):
             
             elif 'while (' in line or 'if (' in line:
                 if 'while (' in line:
+                    token_tracker[4][-1] += 1
                     tokens.append('WHILE LOOP:')
                     if line[line.index('{') - 1] == ')':
                         statement = line[line.index('while (') + 7:line.index('{') - 1]
@@ -357,6 +368,7 @@ def syptonic_tokenizer(filepath):
                         statement = line[line.index('while (') + 7:line.index('{') - 2]
                     statement = statement.strip()
                 elif 'if (' in line:
+                    token_tracker[2][-1] += 1
                     tokens.append('IF STATEMENT:')
                     if line[line.index('{') - 1] == ')':
                         statement = line[line.index('if (') + 4:line.index('{') - 1]
@@ -390,10 +402,7 @@ def syptonic_tokenizer(filepath):
                 for indx, tkns in enumerate(tokens):
                     if tkns == 'FUNCTION:' and tokens[indx + 1] == func_name:
                         func_name_is_defined = True
-                if func_name_is_defined or func_name in variables:
-                    variables.append(func_name)
-                else:
-                    raise NameError(f'Function \'{func_name}\' is undefined!')
+                variables.append(func_name)
                         
             elif 'call' in line:
                 func_name = line[line.index('call ') + 4:line.index('(')].strip()
@@ -441,11 +450,13 @@ def syptonic_tokenizer(filepath):
                 tokens.append('CONTINUE STATEMENT')
                 
             elif 'match (' in line.strip() or 'match(' in line.strip():
+                token_tracker[5][-1] += 1
                 match_variable = line[line.index('(')+1:line.index(')')]
                 tokens.append('MATCH:')
                 tokens.append(match_variable)
             
             elif 'find (' in line.strip() or 'find(' in line.strip():
+                token_tracker[6][-1] += 1
                 find_value = line[line.index('(')+1:line.index(')')]
                 tokens.append('FIND:')
                 tokens.append(find_value)
@@ -528,44 +539,56 @@ def syptonic_tokenizer(filepath):
                     variables.append(name[1][:-1])
                     variables.append(var_type.upper())
                     
-            elif ('} ' in line and not 'console.print' in line) or '}\n' in line or line == '}':
+            elif ('} ' in line and not 'console.print' in line and not 'return' in line) or '}\n' in line or line == '}':
                 line = line.strip()
                 already_appended_end = False
                 for iterator, trash in enumerate(tokens):
-                    token = tokens[-1]
                     previous_token = tokens[-1 - iterator]
-                    if previous_token == 'FOREACH LOOP:':
+                        
+                    if previous_token == 'FOREACH LOOP:' and token_tracker[0][-1] > 0:
                         tokens.append('FOREACH END')
+                        token_tracker[0][-1] -= 1
                         already_appended_end = True
                         break
                     
-                    elif previous_token == 'FOR LOOP:':
+                    elif previous_token == 'FOR LOOP:' and token_tracker[1][-1] > 0:
                         tokens.append('FOR END')
+                        token_tracker[1][-1] -= 1
                         already_appended_end = True
                         break
 
-                    elif previous_token == 'IF STATEMENT:':
+                    elif previous_token == 'IF STATEMENT:' and token_tracker[2][-1] > 0:
                         tokens.append('IF STATEMENT END')
+                        token_tracker[2][-1] -= 1
                         already_appended_end = True
                         break
                     
-                    elif previous_token == 'FUNCTION:':
+                    elif previous_token == 'FUNCTION:' and token_tracker[3][-1] > 0:
                         tokens.append('FUNCTION END')
+                        token_tracker[3][-1] -= 1
                         already_appended_end = True
                         break
                     
-                    elif previous_token == 'WHILE LOOP:':
+                    elif previous_token == 'WHILE LOOP:' and token_tracker[4][-1] > 0:
                         tokens.append('WHILE END')
+                        token_tracker[4][-1] -= 1
                         already_appended_end = True
                         break
                     
-                    elif previous_token == 'MATCH:':
-                        tokens.append('MATCH-FIND END')
+                    elif previous_token == 'MATCH:' and token_tracker[5][-1] > 0:
+                        tokens.append('MATCH END')
+                        token_tracker[5][-1] -= 1
                         already_appended_end = True
                         break
                     
-                if not already_appended_end:    
-                    tokens.append("END")
+                    elif previous_token == 'FIND:' and token_tracker[6][-1] > 0:
+                        tokens.append('FIND END')
+                        token_tracker[6][-1] -= 1
+                        already_appended_end = True
+                        break
+                    
+                if not already_appended_end:
+                    raise SyntaxError('Unexpected \'}\'')
                     
             elif line == '\n' or len(line.split()) == 0:
                 tokens.append('\n')
@@ -733,9 +756,16 @@ def syptonic_tokenizer(filepath):
             elif variable_operation(variables, line)[0] == "Decrement Operator":
                 tokens.append("DECREMENT OPERATOR:")
                 name = variable_operation(variables, line)[1]
+                incrementor = variable_operation(variables, line)[2]
+                if name[-1] == ';':
+                    name = name[:-1]
                 if name[0] == '&':
                     raise SyntaxError("Immutable value cannot be decremented")
                 tokens.append(name)
+                if incrementor == ';':
+                    tokens.append(1)
+                else:
+                    tokens.append(incrementor)
                     
             elif variable_operation(variables, line)[0] == "Addition":
                 tokens.append("ADDITION:")
@@ -814,6 +844,9 @@ def syptonic_tokenizer(filepath):
                 tokens.append(value_added)
                         
         file.close()
+        for i in token_tracker:
+            if i[-1] > 0:
+                raise SyntaxError('You didn\'t close a \'{\'')
         #print(variables)
         #print(tokens)
         syptonic_interpreter(filepath[:-4], tokens)
