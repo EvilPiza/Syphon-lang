@@ -165,15 +165,10 @@ def syptonic_interpreter(filename, tokens):
                         file.write('\t'*indents+f"{tokens[var + 3]} = {tokens[var + 4]}.split(' ')")
                 else:
                     file.write('\t'*indents+f"{tokens[var + 3]}: {tokens[var + 1]} = {tokens[var + 4]}\n")
-            if token == "END" or token == "FIND END" or token == "WHILE END" or token == "FUNCTION END" or token == "FOREACH END":
+            if token == "END" or token == "FIND END" or token == "WHILE END" or token == "FUNCTION END" or token == "FOREACH END" or token == "IF STATEMENT END":
                 indents -= 1
-                file.write('\n')
-            if token == "":
+            if token == "IMPORT END" or token == "MATCH END" or token == "":
                 pass
-            if token == "IF STATEMENT END":
-                indents -= 1
-            if token == "IMPORT END" or token == "MATCH END":
-                file.write('\n')
             if token == "FOR END":
                 for_input = 0
                 for iterator in range(len(tokens)):
