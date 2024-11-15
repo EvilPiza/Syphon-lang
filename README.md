@@ -15,7 +15,6 @@
 
 - Allow one liners (rework basically everything that uses brackets :<)
 - Remove useless errors (would do this now but im too busy (lazy))
-- Full rewrite (code too ugly) (i really don't want to do this)
 
 ## How to work bat file (for dummies)
 
