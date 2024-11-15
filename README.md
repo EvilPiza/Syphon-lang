@@ -23,6 +23,3 @@
 - To only *Compile* Syptonic and not run it just add `-c` to the end!!
 - To delete the Python file after it runs add the `-d` parameter!!
 
-## Official Syptonic Logo!!
-  
-![SyptonicLogo](https://github.com/user-attachments/assets/a117d966-664e-4ab2-958c-7a96a25edd5b)
